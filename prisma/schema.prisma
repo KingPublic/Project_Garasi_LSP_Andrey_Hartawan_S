@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               Int         @id @default(autoincrement())
+  nik              String?     @unique
+  namaLengkap      String
+  noTelepon        String
+  email            String      @unique
+  passwordHash     String
+  role             String      @default("PENYEWA")
+  statusVerifikasi String      @default("PENDING")
+  kendaraan        Kendaraan[]
+  sewa             Sewa[]
+  createdAt        DateTime    @default(now())
+}
+
+model Garasi {
+  id                 String   @id
+  tipeGarasi         String
+  nomorUrut          Int
+  hargaHarian        Int
+  hargaListrikPerKwh Int?
+  status             String   @default("AVAILABLE")
+  sewa               Sewa[]
+  createdAt          DateTime @default(now())
+}
+
+model Kendaraan {
+  id                  Int      @id @default(autoincrement())
+  penyewa             User     @relation(fields: [penyewaId], references: [id])
+  penyewaId           Int
+  tipeKendaraan       String
+  nomorPlat           String?
+  merekTipe           String
+  kapasitasBateraiKwh Float?
+  sewa                Sewa[]
+  createdAt           DateTime @default(now())
+}
+
+model Sewa {
+  id               Int                @id @default(autoincrement())
+  penyewa          User               @relation(fields: [penyewaId], references: [id])
+  penyewaId        Int
+  garasi           Garasi             @relation(fields: [garasiId], references: [id])
+  garasiId         String
+  kendaraan        Kendaraan          @relation(fields: [kendaraanId], references: [id])
+  kendaraanId      Int
+  tipeSewa         String
+  jumlahHari       Int
+  tanggalMulai     DateTime
+  tanggalSelesai   DateTime
+  sisaBateraiKwh   Float?
+  biayaSewa        Int
+  biayaListrik     Int                @default(0)
+  totalBiaya       Int
+  buktiBayarPath   String
+  statusSewa       String             @default("AKTIF")
+  perpanjangan     PerpanjanganSewa[]
+  createdAt        DateTime           @default(now())
+}
+
+model PerpanjanganSewa {
+  id                 Int      @id @default(autoincrement())
+  sewa               Sewa     @relation(fields: [sewaId], references: [id])
+  sewaId             Int
+  tanggalSelesaiLama DateTime
+  tanggalSelesaiBaru DateTime
+  tambahanHari       Int
+  biayaTambahan      Int
+  buktiBayarPath     String
+  createdAt          DateTime @default(now())
+}
