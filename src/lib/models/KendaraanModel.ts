@@ -45,9 +45,7 @@ export class KendaraanModel extends BaseModel<KendaraanDTO> {
 	/**
 	 * Memvalidasi tipe kendaraan.
 	 *
-	 * @static
-	 * @param {TipeKendaraan} tipe - Tipe kendaraan.
-	 * @throws {Error} Jika tipe kendaraan tidak valid.
+	 * @param tipe - Tipe kendaraan.
 	 */
 	public static validateTipeKendaraan(tipe: TipeKendaraan): void {
 		const validTypes: TipeKendaraan[] = ['SEPEDA', 'SEPEDA_MOTOR', 'MOBIL', 'MOBIL_LISTRIK'];
@@ -59,9 +57,7 @@ export class KendaraanModel extends BaseModel<KendaraanDTO> {
 	/**
 	 * Memvalidasi ID penyewa pemilik kendaraan.
 	 *
-	 * @static
-	 * @param {number} penyewaId - ID pengguna penyewa.
-	 * @throws {Error} Jika ID tidak valid.
+	 * @param penyewaId - ID pengguna penyewa.
 	 */
 	public static validatePenyewaId(penyewaId: number): void {
 		if (typeof penyewaId !== 'number' || !Number.isInteger(penyewaId) || penyewaId <= 0) {
@@ -72,9 +68,7 @@ export class KendaraanModel extends BaseModel<KendaraanDTO> {
 	/**
 	 * Memvalidasi input merek dan tipe kendaraan (wajib diisi).
 	 *
-	 * @static
-	 * @param {string} merekTipe - Merek dan tipe kendaraan (e.g. "Toyota Avanza", "Polygon Xtrada").
-	 * @throws {Error} Jika kosong atau bukan string.
+	 * @param merekTipe - Merek dan tipe kendaraan (e.g. "Toyota Avanza", "Polygon Xtrada").
 	 */
 	public static validateMerekTipe(merekTipe: string): void {
 		if (!merekTipe || typeof merekTipe !== 'string' || merekTipe.trim().length === 0) {
@@ -87,10 +81,8 @@ export class KendaraanModel extends BaseModel<KendaraanDTO> {
 	 * Nomor plat wajib diisi untuk 'SEPEDA_MOTOR', 'MOBIL', dan 'MOBIL_LISTRIK'.
 	 * Untuk tipe 'SEPEDA', nomor plat boleh kosong (dikelola sebagai null).
 	 *
-	 * @static
-	 * @param {TipeKendaraan} tipe - Tipe kendaraan.
-	 * @param {string | null | undefined} nomorPlat - String nomor plat.
-	 * @throws {Error} Jika plat kosong pada kendaraan bermotor/mobil.
+	 * @param tipe - Tipe kendaraan.
+	 * @param nomorPlat - String nomor plat.
 	 */
 	public static validateNomorPlat(tipe: TipeKendaraan, nomorPlat: string | null | undefined): void {
 		if (tipe === 'SEPEDA') {
@@ -106,10 +98,8 @@ export class KendaraanModel extends BaseModel<KendaraanDTO> {
 	 * Memvalidasi kapasitas baterai kendaraan dalam satuan kWh.
 	 * Wajib bernilai > 0 khusus untuk kendaraan tipe 'MOBIL_LISTRIK'.
 	 *
-	 * @static
-	 * @param {TipeKendaraan} tipe - Tipe kendaraan.
-	 * @param {number | null | undefined} kapasitasKwh - Kapasitas baterai dalam kWh.
-	 * @throws {Error} Jika kapasitas baterai <= 0 atau kosong untuk mobil listrik.
+	 * @param tipe - Tipe kendaraan.
+	 * @param kapasitasKwh - Kapasitas baterai dalam kWh.
 	 */
 	public static validateKapasitasBaterai(
 		tipe: TipeKendaraan,
@@ -129,8 +119,8 @@ export class KendaraanModel extends BaseModel<KendaraanDTO> {
 	 * - MOBIL: hanya garasi MOBIL
 	 * - MOBIL_LISTRIK: boleh garasi MOBIL atau MOBIL_LISTRIK
 	 *
-	 * @param {TipeGarasi} tipeGarasi - Tipe garasi tujuan.
-	 * @returns {boolean} True jika cocok, false jika tidak cocok.
+	 * @param tipeGarasi - Tipe garasi tujuan.
+	 * @returns True jika cocok, false jika tidak cocok.
 	 */
 	public bisaMasukGarasi(tipeGarasi: TipeGarasi): boolean {
 		switch (this.tipeKendaraan) {
@@ -149,8 +139,7 @@ export class KendaraanModel extends BaseModel<KendaraanDTO> {
 	/**
 	 * Memvalidasi kecocokan kendaraan dengan garasi, melemparkan Error jika tidak kompatibel.
 	 *
-	 * @param {TipeGarasi} tipeGarasi - Tipe garasi yang dipilih.
-	 * @throws {Error} Jika tidak kompatibel.
+	 * @param tipeGarasi - Tipe garasi yang dipilih.
 	 */
 	public validasiKesesuaianGarasi(tipeGarasi: TipeGarasi): void {
 		if (!this.bisaMasukGarasi(tipeGarasi)) {
@@ -162,8 +151,6 @@ export class KendaraanModel extends BaseModel<KendaraanDTO> {
 
 	/**
 	 * Mengonversi model ke bentuk DTO polos.
-	 *
-	 * @returns {KendaraanDTO} Objek DTO.
 	 */
 	public toDTO(): KendaraanDTO {
 		return {

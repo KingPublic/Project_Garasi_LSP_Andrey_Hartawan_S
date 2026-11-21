@@ -1,8 +1,3 @@
-/**
- * @file LaporanService.ts
- * @description Service orkestrasi pelaporan persewaan garasi dan agregasi pendapatan dengan 4 dimensi filter.
- */
-
 import type { IGarasiRepository, ISewaRepository, IUserRepository, LaporanData, LaporanFilterInput } from '../repositories/interfaces';
 import { getTodayUtcDate } from '../utils/date';
 import { garasiRepository } from '../repositories/GarasiRepository';

@@ -47,9 +47,7 @@ export class UserModel extends BaseModel<UserDTO> {
 	/**
 	 * Memvalidasi apakah role pengguna valid ('ADMIN' atau 'PENYEWA').
 	 *
-	 * @static
-	 * @param {Role} role - Role pengguna.
-	 * @throws {Error} Jika role tidak dikenal.
+	 * @param role - Role pengguna.
 	 */
 	public static validateRole(role: Role): void {
 		if (role !== 'ADMIN' && role !== 'PENYEWA') {
@@ -62,10 +60,8 @@ export class UserModel extends BaseModel<UserDTO> {
 	 * Untuk peran 'PENYEWA', NIK wajib tepat 16 digit angka.
 	 * Untuk peran 'ADMIN', NIK diperbolehkan bernilai null.
 	 *
-	 * @static
-	 * @param {string | null} nik - Nomor NIK calon penyewa.
-	 * @param {Role} role - Role pengguna.
-	 * @throws {Error} Jika NIK tidak memenuhi kriteria 16 digit angka untuk penyewa.
+	 * @param nik - Nomor NIK calon penyewa.
+	 * @param role - Role pengguna.
 	 */
 	public static validateNik(nik: string | null, role: Role): void {
 		if (role === 'ADMIN') {
@@ -85,9 +81,7 @@ export class UserModel extends BaseModel<UserDTO> {
 	/**
 	 * Memvalidasi nama lengkap (minimal 3 karakter non-kosong).
 	 *
-	 * @static
-	 * @param {string} namaLengkap - Nama lengkap pengguna.
-	 * @throws {Error} Jika nama terlalu pendek atau kosong.
+	 * @param namaLengkap - Nama lengkap pengguna.
 	 */
 	public static validateNamaLengkap(namaLengkap: string): void {
 		if (!namaLengkap || typeof namaLengkap !== 'string' || namaLengkap.trim().length < 3) {
@@ -98,9 +92,7 @@ export class UserModel extends BaseModel<UserDTO> {
 	/**
 	 * Memvalidasi nomor telepon (10 s.d. 15 digit angka, opsional awalan +).
 	 *
-	 * @static
-	 * @param {string} noTelepon - Nomor kontak telepon.
-	 * @throws {Error} Jika format nomor telepon tidak valid.
+	 * @param noTelepon - Nomor kontak telepon.
 	 */
 	public static validateNoTelepon(noTelepon: string): void {
 		if (!noTelepon || typeof noTelepon !== 'string') {
@@ -115,9 +107,7 @@ export class UserModel extends BaseModel<UserDTO> {
 	/**
 	 * Memvalidasi alamat email menggunakan pola regex standar.
 	 *
-	 * @static
-	 * @param {string} email - Alamat email pengguna.
-	 * @throws {Error} Jika format email tidak valid.
+	 * @param email - Alamat email pengguna.
 	 */
 	public static validateEmail(email: string): void {
 		if (!email || typeof email !== 'string') {
@@ -132,9 +122,7 @@ export class UserModel extends BaseModel<UserDTO> {
 	/**
 	 * Memvalidasi status verifikasi.
 	 *
-	 * @static
-	 * @param {StatusVerifikasi} status - Status verifikasi.
-	 * @throws {Error} Jika status tidak valid.
+	 * @param status - Status verifikasi.
 	 */
 	public static validateStatusVerifikasi(status: StatusVerifikasi): void {
 		const validStatuses: StatusVerifikasi[] = ['PENDING', 'APPROVED', 'REJECTED'];
@@ -146,9 +134,7 @@ export class UserModel extends BaseModel<UserDTO> {
 	/**
 	 * Memvalidasi kata sandi mentah pada saat pendaftaran (minimal 6 karakter).
 	 *
-	 * @static
-	 * @param {string} password - Password mentah pengguna.
-	 * @throws {Error} Jika password kurang dari 6 karakter.
+	 * @param password - Password mentah pengguna.
 	 */
 	public static validateRawPassword(password: string): void {
 		if (!password || typeof password !== 'string' || password.length < 6) {
@@ -190,7 +176,7 @@ export class UserModel extends BaseModel<UserDTO> {
 	 * Memeriksa apakah penyewa memiliki hak akses untuk melakukan sewa garasi.
 	 * Hanya pengguna dengan status verifikasi 'APPROVED' yang diizinkan menyewa.
 	 *
-	 * @returns {boolean} True jika berstatus 'APPROVED', false jika 'PENDING' atau 'REJECTED'.
+	 * @returns True jika berstatus 'APPROVED', false jika 'PENDING' atau 'REJECTED'.
 	 */
 	public bisaMenyewa(): boolean {
 		return this._statusVerifikasi === 'APPROVED';
@@ -198,9 +184,6 @@ export class UserModel extends BaseModel<UserDTO> {
 
 	/**
 	 * Memvalidasi apakah pengguna diizinkan menyewa, melemparkan Error jika tidak berhak.
-	 *
-	 * @returns {void}
-	 * @throws {Error} Jika status verifikasi belum 'APPROVED'.
 	 */
 	public validasiBisaMenyewa(): void {
 		if (!this.bisaMenyewa()) {
@@ -212,8 +195,6 @@ export class UserModel extends BaseModel<UserDTO> {
 
 	/**
 	 * Mengonversi model ke bentuk DTO polos.
-	 *
-	 * @returns {UserDTO} Objek DTO.
 	 */
 	public toDTO(): UserDTO {
 		return {

@@ -1,8 +1,3 @@
-/**
- * @file AuthService.ts
- * @description Service orkestrasi autentikasi, registrasi penyewa, verifikasi NIK, dan login.
- */
-
 import type { User } from '../generated/prisma/client';
 import { UserModel } from '../models/UserModel';
 import type { StatusVerifikasi } from '../models/types';
@@ -125,8 +120,6 @@ export class AuthService {
 
 	/**
 	 * Mengambil seluruh daftar calon penyewa yang terdaftar untuk ditampilkan di tabel Admin.
-	 *
-	 * @returns {Promise<User[]>} Daftar calon penyewa.
 	 */
 	public async getDaftarCalonPenyewa(): Promise<User[]> {
 		return this.userRepo.findAllCalonPenyewa();

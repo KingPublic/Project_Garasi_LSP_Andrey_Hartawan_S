@@ -1,9 +1,3 @@
-/**
- * @file GarasiService.ts
- * @description Service orkestrasi inventaris garasi, pembuatan massal berkelompok,
- * dan pengecekan ketersediaan unit anti-bentrok jadwal dengan optimasi bebas query N+1.
- */
-
 import type { Garasi, Sewa } from '../generated/prisma/client';
 import { GarasiModel } from '../models/GarasiModel';
 import { SewaModel } from '../models/SewaModel';
@@ -141,8 +135,7 @@ export class GarasiService {
 	 * Melakukan sinkronisasi status kolom `Garasi.status` ('AVAILABLE' vs 'USED')
 	 * secara real-time berdasarkan transaksi sewa aktif pada hari ini.
 	 *
-	 * @param {Date} [today=getTodayUtcDate()] - Tanggal acuan sinkronisasi.
-	 * @returns {Promise<void>}
+	 * @param today - Tanggal acuan sinkronisasi.
 	 */
 	public async sinkronisasiStatusGarasiHariIni(today: Date = getTodayUtcDate()): Promise<void> {
 		const semuaGarasi = await this.garasiRepo.findAll();

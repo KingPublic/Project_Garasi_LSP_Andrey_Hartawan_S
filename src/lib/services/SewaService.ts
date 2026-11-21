@@ -1,9 +1,3 @@
-/**
- * @file SewaService.ts
- * @description Service orkestrasi transaksi sewa garasi baru, pencegahan IDOR kendaraan,
- * validasi anti-bentrok, perhitungan biaya murni, dan perpanjangan masa sewa oleh Admin.
- */
-
 import type { Garasi, Kendaraan, PerpanjanganSewa, Sewa } from '../generated/prisma/client';
 import { KendaraanModel } from '../models/KendaraanModel';
 import { SewaModel } from '../models/SewaModel';
