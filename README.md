@@ -41,12 +41,14 @@
 
 ## Teknologi & Dependensi
 
-- **Frontend & Full-Stack**: [SvelteKit 3](https://kit.svelte.dev/) dengan [Svelte 5 Runes](https://svelte.dev/) (`$state`, `$derived`, `$props`).
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) dengan palet monokromatik modern.
-- **Bahasa Pemrograman**: [TypeScript 6](https://www.typescriptlang.org/) dengan *strict mode* (`svelte-check` 0 error/0 warning).
-- **Runtime & Package Manager**: [Bun](https://bun.sh/) (`bun@1.4.0`).
-- **Basis Data**: [PostgreSQL](https://www.postgresql.org/) melalui [Prisma ORM 7](https://www.prisma.io/).
-- **Testing Framework**: [Vitest](https://vitest.dev/) untuk pengujian unit & integrasi (86 skenario pengujian komprehensif).
+| Library / Alat | Versi | Lisensi | Alasan Pemilihan |
+| :--- | :--- | :--- | :--- |
+| **SvelteKit 3 & Svelte 5** | `^3.2.0` / `^5.57.3` | MIT | Framework full-stack dengan routing berbasis folder dan state reaktif yang ringan |
+| **Tailwind CSS v4 & @tailwindcss/forms** | `^4.3.5` | MIT | Styling utility-first yang konsisten dan cepat dikembangkan |
+| **Prisma ORM & @prisma/adapter-pg + pg** | `7.10.1` / `^8.23.1` | Apache-2.0 / MIT | Akses PostgreSQL yang aman secara tipe bersama TypeScript |
+| **Vitest** | `^5.1.0` | MIT | Framework unit testing yang cepat dan langsung kompatibel dengan Vite/TypeScript |
+| **TypeScript & Bun** | `^6.0.3` / `1.4.0` | Apache-2.0 / MIT | Pengecekan tipe statis ketat dan runtime yang cepat |
+| **dotenv** | `^18.0.10` | BSD-2-Clause | Membaca konfigurasi koneksi database dari file `.env` |
 
 ---
 

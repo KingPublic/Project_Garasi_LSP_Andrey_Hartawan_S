@@ -63,7 +63,7 @@
 		</button>
 	</div>
 
-	<!-- Ringkasan Dashboard KPI Cards (Refined Pastel Style) -->
+	<!-- Ringkasan Statistik Dashboard -->
 	<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
 		<!-- Omzet Bulan Ini -->
 		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">

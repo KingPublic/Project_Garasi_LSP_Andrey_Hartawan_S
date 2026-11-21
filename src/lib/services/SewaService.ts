@@ -46,9 +46,10 @@ export interface PerpanjangSewaServiceParams {
 }
 
 /**
- * Service untuk menangani transaksi penyewaan dan perpanjangan garasi.
+ * Service untuk menangani transaksi penyewaan dan perpanjangan sewa garasi.
  *
- * @class SewaService
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class SewaService {
 	private userRepo: IUserRepository;
@@ -59,11 +60,10 @@ export class SewaService {
 	/**
 	 * Konstruktor SewaService dengan dependency injection.
 	 *
-	 * @constructor
-	 * @param {IUserRepository} [userRepo=userRepository] - Repository user.
-	 * @param {IGarasiRepository} [garasiRepo=garasiRepository] - Repository garasi.
-	 * @param {IKendaraanRepository} [kendaraanRepo=kendaraanRepository] - Repository kendaraan.
-	 * @param {ISewaRepository} [sewaRepo=sewaRepository] - Repository sewa.
+	 * @param userRepo - Repository user.
+	 * @param garasiRepo - Repository garasi.
+	 * @param kendaraanRepo - Repository kendaraan.
+	 * @param sewaRepo - Repository sewa.
 	 */
 	constructor(
 		userRepo: IUserRepository = userRepository,
@@ -78,16 +78,14 @@ export class SewaService {
 	}
 
 	/**
-	 * Memproses transaksi Sewa Baru:
-	 * 1. Validasi penyewa terdaftar dan berstatus 'APPROVED' (hanya APPROVED yang boleh menyewa).
+	 * Memproses transaksi sewa baru:
+	 * 1. Validasi status penyewa (wajib APPROVED).
 	 * 2. Validasi unit garasi ada.
-	 * 3. Validasi kepemilikan kendaraan (pencegahan celah IDOR jika kendaraanId diberikan).
-	 * 4. Pra-validasi model sewa dan anti-bentrok SEBELUM membuat entitas baru di basis data (mencegah data sampah).
-	 * 5. Simpan transaksi ke database & ubah status garasi menjadi 'USED' jika tanggalMulai mencakup hari ini.
+	 * 3. Validasi kepemilikan kendaraan (pencegahan IDOR).
+	 * 4. Pra-validasi SewaModel dan anti-bentrok sebelum mutasi database (mencegah data sampah).
+	 * 5. Simpan transaksi ke database dan update status garasi menjadi USED jika mulai hari ini.
 	 *
-	 * @param {BuatSewaServiceParams} params - Parameter transaksi sewa.
-	 * @returns {Promise<Sewa>} Transaksi sewa yang tersimpan.
-	 * @throws {Error} Jika validasi status penyewa, kepemilikan kendaraan, kecocokan garasi, atau bentrok tanggal gagal.
+	 * @param params - Parameter transaksi sewa.
 	 */
 	public async buatSewaBaru(params: BuatSewaServiceParams): Promise<Sewa> {
 		// 1. Validasi status verifikasi penyewa
@@ -127,7 +125,7 @@ export class SewaService {
 				throw new Error(`Kendaraan dengan ID ${params.kendaraanId} tidak ditemukan.`);
 			}
 
-			// Proteksi IDOR: Pastikan kendaraan benar-benar milik penyewa yang sedang menyewa
+			// Pengecekan IDOR: mencegah penyewa memakai ID kendaraan milik pengguna lain
 			if (existingKendaraan.penyewaId !== params.penyewaId) {
 				throw new Error(`Kendaraan dengan ID ${params.kendaraanId} bukan milik penyewa terkait.`);
 			}
@@ -138,7 +136,7 @@ export class SewaService {
 			merekTipeFinal = existingKendaraan.merekTipe;
 			kapasitasBateraiFinal = existingKendaraan.kapasitasBateraiKwh;
 		} else {
-			// Pra-validasi KendaraanModel baru di memori terlebih dahulu tanpa menyimpan ke DB
+			// Pra-validasi model kendaraan di memori agar jika validasi sewa/bentrok gagal, data kendaraan tidak terlanjur tersimpan di database
 			kendaraanBaruModel = new KendaraanModel({
 				penyewaId: params.penyewaId,
 				tipeKendaraan: params.tipeKendaraan,
@@ -202,7 +200,7 @@ export class SewaService {
 			}))
 		});
 
-		// 7. Jika menggunakan kendaraan baru dan seluruh validasi sewa telah lulus, baru simpan kendaraan
+		// 7. Jika memakai kendaraan baru dan seluruh validasi sewa telah lulus, simpan kendaraan ke database
 		if (kendaraanBaruModel) {
 			const savedKendaraan = await this.kendaraanRepo.create(kendaraanBaruModel.toDTO());
 			kendaraanId = savedKendaraan.id;
@@ -231,14 +229,12 @@ export class SewaService {
 	/**
 	 * Memproses perpanjangan masa sewa aktif oleh Admin:
 	 * 1. Validasi transaksi sewa aktif ada.
-	 * 2. Validasi anti-bentrok terhadap jadwal booking sewa lain pada garasi yang sama.
-	 * 3. Perhitungan biaya tambahan positif dengan pemecahan blok bulan dinamis (25x) + sisa hari.
+	 * 2. Validasi anti-bentrok terhadap jadwal sewa lain pada garasi yang sama.
+	 * 3. Perhitungan biaya tambahan dengan pemecahan blok bulan kalender (25x) + sisa hari.
 	 * 4. Simpan riwayat ke tabel PerpanjanganSewa.
 	 * 5. Perbarui tanggal selesai, akumulasi total biaya, dan total jumlah hari pada tabel Sewa.
 	 *
-	 * @param {PerpanjangSewaServiceParams} params - Parameter perpanjangan sewa.
-	 * @returns {Promise<{ sewa: Sewa; perpanjangan: PerpanjanganSewa }>} Hasil sewa yang diperpanjang dan riwayatnya.
-	 * @throws {Error} Jika transaksi tidak aktif, tanggal baru tidak valid, atau jadwal bentrok.
+	 * @param params - Parameter perpanjangan sewa.
 	 */
 	public async perpanjangSewa(
 		params: PerpanjangSewaServiceParams
@@ -303,10 +299,9 @@ export class SewaService {
 	}
 
 	/**
-	 * Mengambil seluruh riwayat sewa milik seorang penyewa tertentu.
+	 * Mengambil seluruh riwayat sewa milik seorang penyewa.
 	 *
-	 * @param {number} penyewaId - ID penyewa.
-	 * @returns {Promise<Array<Sewa & { garasi: Garasi; kendaraan: Kendaraan }>>} Daftar riwayat sewa penyewa.
+	 * @param penyewaId - ID penyewa.
 	 */
 	public async getRiwayatSewaPenyewa(
 		penyewaId: number
@@ -315,30 +310,26 @@ export class SewaService {
 	}
 
 	/**
-	 * Mengambil daftar seluruh unit sewa yang sedang aktif pada hari ini untuk ditampilkan di halaman Admin.
+	 * Mengambil daftar seluruh unit sewa yang sedang aktif pada hari tertentu.
 	 *
-	 * @param {Date} [today=getTodayUtcDate()] - Tanggal hari ini.
-	 * @returns {Promise<SewaDetail[]>} Daftar sewa aktif hari ini.
+	 * @param today - Tanggal acuan.
 	 */
 	public async getSewaAktifHariIni(today: Date = getTodayUtcDate()): Promise<SewaDetail[]> {
 		return this.sewaRepo.findSewaAktifHariIni(today);
 	}
 
 	/**
-	 * Mengambil daftar seluruh transaksi sewa yang sedang menunggu verifikasi pembayaran oleh Admin.
-	 *
-	 * @returns {Promise<SewaDetail[]>} Daftar transaksi sewa berstatus MENUNGGU_VERIFIKASI.
+	 * Mengambil daftar transaksi sewa yang sedang menunggu verifikasi pembayaran oleh Admin.
 	 */
 	public async getDaftarSewaMenungguVerifikasi(): Promise<SewaDetail[]> {
 		return this.sewaRepo.findSewaMenungguVerifikasi();
 	}
 
 	/**
-	 * Admin memverifikasi bukti pembayaran transaksi sewa ('AKTIF' untuk setuju, 'DITOLAK' untuk tolak).
+	 * Admin memverifikasi bukti pembayaran transaksi sewa (AKTIF untuk setuju, DITOLAK untuk tolak).
 	 *
-	 * @param {number} sewaId - ID transaksi sewa.
-	 * @param {'AKTIF' | 'DITOLAK'} status - Status keputusan verifikasi.
-	 * @returns {Promise<Sewa>} Transaksi sewa yang telah diperbarui.
+	 * @param sewaId - ID transaksi sewa.
+	 * @param status - Keputusan verifikasi.
 	 */
 	public async verifikasiPembayaran(sewaId: number, status: 'AKTIF' | 'DITOLAK'): Promise<Sewa> {
 		const sewa = await this.sewaRepo.findById(sewaId);

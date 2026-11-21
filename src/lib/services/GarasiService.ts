@@ -14,9 +14,10 @@ import { garasiRepository } from '../repositories/GarasiRepository';
 import { sewaRepository } from '../repositories/SewaRepository';
 
 /**
- * Service untuk operasi dan ketersediaan unit Garasi.
+ * Service untuk operasi inventaris garasi dan pengecekan ketersediaan unit.
  *
- * @class GarasiService
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class GarasiService {
 	private garasiRepo: IGarasiRepository;
@@ -25,9 +26,8 @@ export class GarasiService {
 	/**
 	 * Konstruktor GarasiService dengan dependency injection.
 	 *
-	 * @constructor
-	 * @param {IGarasiRepository} [garasiRepo=garasiRepository] - Repository garasi.
-	 * @param {ISewaRepository} [sewaRepo=sewaRepository] - Repository sewa.
+	 * @param garasiRepo - Repository garasi.
+	 * @param sewaRepo - Repository sewa.
 	 */
 	constructor(
 		garasiRepo: IGarasiRepository = garasiRepository,
@@ -38,17 +38,16 @@ export class GarasiService {
 	}
 
 	/**
-	 * Menambahkan unit garasi baru secara berkelompok (massal) per tipe:
-	 * 1. Mengambil nomor urut terakhir di database.
-	 * 2. Memvalidasi batas kumulatif 999 unit per tipe agar tidak melebihi 3 digit.
-	 * 3. Menghasilkan kode otomatis (S001..S999, C001..C999, E001..E999).
-	 * 4. Menyimpan seluruh unit baru ke database.
+	 * Menambahkan unit garasi baru secara massal per tipe:
+	 * 1. Ambil nomor urut terakhir di database.
+	 * 2. Validasi batas kumulatif 999 unit per tipe.
+	 * 3. Hasilkan kode otomatis (S001..S999, C001..C999, E001..E999).
+	 * 4. Simpan seluruh unit baru ke database.
 	 *
-	 * @param {TipeGarasi} tipe - Tipe garasi ('SEPEDA', 'MOBIL', 'MOBIL_LISTRIK').
-	 * @param {number} jumlahBaru - Jumlah unit yang ingin dibuat.
-	 * @param {number} hargaHarian - Tarif sewa harian.
-	 * @param {number | null} [hargaListrikPerKwh] - Tarif listrik per kWh (khusus MOBIL_LISTRIK).
-	 * @returns {Promise<number>} Jumlah unit yang berhasil dibuat.
+	 * @param tipe - Tipe garasi (SEPEDA, MOBIL, MOBIL_LISTRIK).
+	 * @param jumlahBaru - Jumlah unit baru yang ingin dibuat.
+	 * @param hargaHarian - Tarif sewa harian.
+	 * @param hargaListrikPerKwh - Tarif listrik per kWh (khusus MOBIL_LISTRIK).
 	 */
 	public async buatGarasiMassal(
 		tipe: TipeGarasi,
@@ -71,22 +70,17 @@ export class GarasiService {
 
 	/**
 	 * Mengambil seluruh daftar unit garasi di sistem.
-	 *
-	 * @returns {Promise<Garasi[]>} Daftar seluruh garasi.
 	 */
 	public async getDaftarGarasi(): Promise<Garasi[]> {
 		return this.garasiRepo.findAll();
 	}
 
 	/**
-	 * Mencari unit-unit garasi yang kompatibel dengan jenis kendaraan dan
-	 * TIDAK memiliki jadwal sewa aktif yang bertabrakan (anti-overlap) pada rentang tanggal yang dipilih.
-	 * Menggunakan satu query agregasi aktif untuk mencegah masalah performa N+1 query.
+	 * Mencari unit garasi yang cocok dengan jenis kendaraan dan tidak bentrok pada rentang tanggal sewa.
 	 *
-	 * @param {TipeKendaraan} tipeKendaraan - Tipe kendaraan penyewa.
-	 * @param {Date | string} tanggalMulai - Tanggal mulai sewa.
-	 * @param {Date | string} tanggalSelesai - Tanggal selesai sewa.
-	 * @returns {Promise<Garasi[]>} Daftar unit garasi yang siap disewa.
+	 * @param tipeKendaraan - Tipe kendaraan penyewa.
+	 * @param tanggalMulai - Tanggal mulai sewa.
+	 * @param tanggalSelesai - Tanggal selesai sewa.
 	 */
 	public async getGarasiTersedia(
 		tipeKendaraan: TipeKendaraan,
@@ -99,7 +93,7 @@ export class GarasiService {
 		const semuaGarasi = await this.garasiRepo.findAll();
 		const semuaSewaAktif = await this.sewaRepo.findAllActiveSewa();
 
-		// Mengelompokkan jadwal sewa aktif per garasi di memori (O(1) lookup, 0 database loop query)
+		// Kelompokkan jadwal sewa aktif per garasi di memori agar cek bentrok cukup dilakukan di memori tanpa query database berulang di dalam loop (mencegah N+1 query)
 		const sewaPerGarasi = new Map<string, Sewa[]>();
 		for (const sewa of semuaSewaAktif) {
 			const list = sewaPerGarasi.get(sewa.garasiId) ?? [];

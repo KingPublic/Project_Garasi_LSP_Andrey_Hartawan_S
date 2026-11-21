@@ -58,7 +58,7 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<!-- Hero Welcome Banner (Rumany-Style Dark Card) -->
+	<!-- Banner Header Inventaris Garasi -->
 	<div class="rounded-2xl bg-gradient-to-r from-carbon-black via-gunmetal to-carbon-black text-white p-6 shadow-sm border border-gunmetal/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 		<div>
 			<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/10 text-garage-orange text-xs font-bold mb-2">
@@ -108,7 +108,7 @@
 		</div>
 	{/if}
 
-	<!-- Statistics KPI Cards (Refined Clean Pastel Style) -->
+	<!-- Ringkasan Statistik Unit Garasi -->
 	<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 		<!-- Total Unit -->
 		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">

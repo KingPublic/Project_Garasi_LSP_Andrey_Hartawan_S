@@ -9,17 +9,16 @@ import type { StatusVerifikasi, UserDTO } from '../models/types';
 import type { IUserRepository } from './interfaces';
 
 /**
- * Repository untuk operasi CRUD User.
+ * Repository untuk operasi data pengguna di database.
  *
- * @class UserRepository
- * @implements {IUserRepository}
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class UserRepository implements IUserRepository {
 	/**
-	 * Mencari pengguna berdasarkan ID unik.
+	 * Mencari pengguna berdasarkan ID.
 	 *
-	 * @param {number} id - ID pengguna.
-	 * @returns {Promise<User | null>} Objek User atau null jika tidak ditemukan.
+	 * @param id - ID pengguna.
 	 */
 	public async findById(id: number): Promise<User | null> {
 		return db.user.findUnique({
@@ -30,8 +29,7 @@ export class UserRepository implements IUserRepository {
 	/**
 	 * Mencari pengguna berdasarkan alamat email.
 	 *
-	 * @param {string} email - Email pengguna.
-	 * @returns {Promise<User | null>} Objek User atau null jika tidak ditemukan.
+	 * @param email - Email pengguna.
 	 */
 	public async findByEmail(email: string): Promise<User | null> {
 		return db.user.findUnique({
@@ -40,10 +38,9 @@ export class UserRepository implements IUserRepository {
 	}
 
 	/**
-	 * Mencari pengguna berdasarkan NIK (KTP).
+	 * Mencari pengguna berdasarkan NIK KTP (16 digit).
 	 *
-	 * @param {string} nik - NIK 16 digit.
-	 * @returns {Promise<User | null>} Objek User atau null jika tidak ditemukan.
+	 * @param nik - NIK pengguna.
 	 */
 	public async findByNik(nik: string): Promise<User | null> {
 		return db.user.findUnique({
@@ -52,10 +49,9 @@ export class UserRepository implements IUserRepository {
 	}
 
 	/**
-	 * Menyimpan data pengguna baru ke basis data.
+	 * Menyimpan pengguna baru ke database.
 	 *
-	 * @param {Omit<UserDTO, 'id' | 'createdAt'>} data - Data pengguna baru.
-	 * @returns {Promise<User>} Objek User yang berhasil dibuat.
+	 * @param data - Data akun pengguna baru.
 	 */
 	public async create(data: Omit<UserDTO, 'id' | 'createdAt'>): Promise<User> {
 		return db.user.create({
@@ -74,9 +70,8 @@ export class UserRepository implements IUserRepository {
 	/**
 	 * Memperbarui status verifikasi calon penyewa (APPROVED atau REJECTED).
 	 *
-	 * @param {number} id - ID pengguna.
-	 * @param {StatusVerifikasi} status - Status verifikasi baru.
-	 * @returns {Promise<User>} Objek User yang telah diperbarui.
+	 * @param id - ID pengguna.
+	 * @param status - Status verifikasi baru.
 	 */
 	public async updateStatusVerifikasi(id: number, status: StatusVerifikasi): Promise<User> {
 		return db.user.update({
@@ -86,9 +81,7 @@ export class UserRepository implements IUserRepository {
 	}
 
 	/**
-	 * Mengambil semua daftar calon penyewa (role PENYEWA) yang terdaftar.
-	 *
-	 * @returns {Promise<User[]>} Daftar calon penyewa terurut berdasarkan tanggal pendaftaran terbaru.
+	 * Mengambil seluruh daftar calon penyewa terdaftar.
 	 */
 	public async findAllCalonPenyewa(): Promise<User[]> {
 		return db.user.findMany({

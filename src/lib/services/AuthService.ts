@@ -19,33 +19,31 @@ export interface RegisterPenyewaParams {
 }
 
 /**
- * Service untuk operasi autentikasi dan verifikasi pengguna.
+ * Service untuk operasi autentikasi dan registrasi akun.
  *
- * @class AuthService
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class AuthService {
 	private userRepo: IUserRepository;
 
 	/**
-	 * Konstruktor AuthService dengan dependency injection.
+	 * Konstruktor AuthService dengan dependency injection repository user.
 	 *
-	 * @constructor
-	 * @param {IUserRepository} [userRepo=userRepository] - Repository user.
+	 * @param userRepo - Implementasi repository user.
 	 */
 	constructor(userRepo: IUserRepository = userRepository) {
 		this.userRepo = userRepo;
 	}
 
 	/**
-	 * Mendaftarkan akun Penyewa baru ke dalam sistem:
-	 * 1. Validasi NIK (wajib 16 digit angka), nama lengkap, telepon, email, password minimal 6 karakter.
+	 * Mendaftarkan akun penyewa baru ke sistem:
+	 * 1. Validasi NIK (wajib 16 digit), nama lengkap, nomor telepon, format email, dan password minimal 6 karakter.
 	 * 2. Cek keunikan email dan NIK di database.
-	 * 3. Hash password dengan Bun.password.hash (atau fallback secure crypto).
+	 * 3. Hash password memakai scrypt (src/lib/server/password.ts).
 	 * 4. Simpan dengan statusVerifikasi awal 'PENDING'.
 	 *
-	 * @param {RegisterPenyewaParams} params - Data registrasi calon penyewa.
-	 * @returns {Promise<User>} Objek User yang berhasil dibuat.
-	 * @throws {Error} Jika validasi gagal atau email/NIK telah terdaftar.
+	 * @param params - Data registrasi calon penyewa.
 	 */
 	public async registerPenyewa(params: RegisterPenyewaParams): Promise<User> {
 		UserModel.validateNik(params.nik, 'PENYEWA');
@@ -81,12 +79,10 @@ export class AuthService {
 	}
 
 	/**
-	 * Memverifikasi kredensial login pengguna (Admin maupun Penyewa).
+	 * Memverifikasi email dan password pengguna saat login.
 	 *
-	 * @param {string} email - Alamat email pengguna.
-	 * @param {string} passwordRaw - Kata sandi mentah.
-	 * @returns {Promise<User>} Objek User jika berhasil diautentikasi.
-	 * @throws {Error} Jika email atau password salah.
+	 * @param email - Alamat email pengguna.
+	 * @param passwordRaw - Password mentah.
 	 */
 	public async login(email: string, passwordRaw: string): Promise<User> {
 		if (!email || !passwordRaw) {
@@ -109,12 +105,10 @@ export class AuthService {
 	}
 
 	/**
-	 * Admin memverifikasi status calon penyewa (Terima 'APPROVED' atau Tolak 'REJECTED').
+	 * Admin memverifikasi akun calon penyewa (APPROVED atau REJECTED).
 	 *
-	 * @param {number} penyewaId - ID penyewa yang diverifikasi.
-	 * @param {StatusVerifikasi} status - Status keputusan ('APPROVED' | 'REJECTED').
-	 * @returns {Promise<User>} Objek User yang diperbarui.
-	 * @throws {Error} Jika status tidak valid atau penyewa tidak ditemukan.
+	 * @param penyewaId - ID calon penyewa.
+	 * @param status - Keputusan verifikasi.
 	 */
 	public async verifikasiPenyewa(penyewaId: number, status: StatusVerifikasi): Promise<User> {
 		if (status !== 'APPROVED' && status !== 'REJECTED') {

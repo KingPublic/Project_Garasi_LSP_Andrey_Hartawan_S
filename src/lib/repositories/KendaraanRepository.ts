@@ -9,17 +9,16 @@ import type { KendaraanDTO } from '../models/types';
 import type { IKendaraanRepository } from './interfaces';
 
 /**
- * Repository untuk operasi CRUD data Kendaraan penyewa.
+ * Repository untuk operasi data kendaraan penyewa di database.
  *
- * @class KendaraanRepository
- * @implements {IKendaraanRepository}
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class KendaraanRepository implements IKendaraanRepository {
 	/**
-	 * Mencari kendaraan berdasarkan ID unik.
+	 * Mencari kendaraan berdasarkan ID.
 	 *
-	 * @param {number} id - ID kendaraan.
-	 * @returns {Promise<Kendaraan | null>} Objek Kendaraan atau null.
+	 * @param id - ID kendaraan.
 	 */
 	public async findById(id: number): Promise<Kendaraan | null> {
 		return db.kendaraan.findUnique({
@@ -28,10 +27,9 @@ export class KendaraanRepository implements IKendaraanRepository {
 	}
 
 	/**
-	 * Mengambil semua daftar kendaraan milik seorang penyewa.
+	 * Mengambil semua kendaraan milik seorang penyewa.
 	 *
-	 * @param {number} penyewaId - ID pengguna penyewa.
-	 * @returns {Promise<Kendaraan[]>} Daftar kendaraan milik penyewa.
+	 * @param penyewaId - ID akun penyewa.
 	 */
 	public async findByPenyewaId(penyewaId: number): Promise<Kendaraan[]> {
 		return db.kendaraan.findMany({
@@ -41,10 +39,9 @@ export class KendaraanRepository implements IKendaraanRepository {
 	}
 
 	/**
-	 * Menyimpan data kendaraan baru ke basis data.
+	 * Menyimpan data kendaraan baru ke database.
 	 *
-	 * @param {Omit<KendaraanDTO, 'id' | 'createdAt'>} data - Data kendaraan.
-	 * @returns {Promise<Kendaraan>} Objek Kendaraan yang berhasil dibuat.
+	 * @param data - Data kendaraan tanpa ID.
 	 */
 	public async create(data: Omit<KendaraanDTO, 'id' | 'createdAt'>): Promise<Kendaraan> {
 		return db.kendaraan.create({

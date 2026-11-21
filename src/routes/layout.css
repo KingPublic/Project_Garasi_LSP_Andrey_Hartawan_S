@@ -7,7 +7,7 @@
 	--font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 	--font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-	/* Custom Palette: User-Defined Monochromatic Scale */
+	/* Palet warna monokromatik utama */
 	--color-bright-snow: #f8f9fa;
 	--color-platinum: #e9ecef;
 	--color-alabaster-grey: #dee2e6;
@@ -27,7 +27,7 @@
 	--color-garage-orange: #fca311;
 	--color-garage-orange-hover: #e5920a;
 
-	/* System Slate Overrides aligned with User Palette */
+	/* Penyesuaian warna slate */
 	--color-slate-50: #f8f9fa;
 	--color-slate-100: #e9ecef;
 	--color-slate-200: #dee2e6;

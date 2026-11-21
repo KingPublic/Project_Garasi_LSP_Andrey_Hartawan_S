@@ -55,7 +55,7 @@
 
 <div class="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col">
 	{#if isDashboardRoute && data.user}
-		<!-- DASHBOARD SIDEBAR LAYOUT (Matches User's Reference Screenshot) -->
+		<!-- Layout Dashboard dengan Sidebar -->
 		<div class="min-h-screen flex flex-col md:flex-row bg-[#f8f9fa]">
 			<!-- Desktop Left Sidebar -->
 			<aside class="hidden md:flex flex-col w-64 lg:w-72 bg-carbon-black text-white shrink-0 min-h-screen sticky top-0 h-screen border-r border-gunmetal/40 select-none z-30">

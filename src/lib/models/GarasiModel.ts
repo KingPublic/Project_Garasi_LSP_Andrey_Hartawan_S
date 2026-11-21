@@ -1,21 +1,15 @@
-/**
- * @file GarasiModel.ts
- * @description Model domain OOP untuk unit garasi.
- * Menangani generator kode garasi 3-digit berurutan, batas kumulatif 999 per tipe,
- * perhitungan tarif sewa bulanan dan listrik, serta validasi kompatibilitas kendaraan.
- */
-
 import { BaseModel } from './BaseModel';
 import type { GarasiDTO, StatusGarasi, TipeGarasi, TipeKendaraan } from './types';
 
 /**
- * Representasi domain unit Garasi.
+ * Menyimpan data dan aturan unit garasi (kode S, C, E serta tarifnya).
+ * Satu unit garasi bisa dipakai di banyak transaksi Sewa.
  *
- * @class GarasiModel
- * @extends {BaseModel<GarasiDTO>}
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class GarasiModel extends BaseModel<GarasiDTO> {
-	public static readonly MAX_KAPASITAS_PER_TIPE = 999;
+	public static readonly MAX_KAPASITAS_PER_TIPE = 999; // batas maksimal unit per tipe garasi
 
 	public static readonly PREFIX_MAP: Record<TipeGarasi, string> = {
 		SEPEDA: 'S',
@@ -26,17 +20,15 @@ export class GarasiModel extends BaseModel<GarasiDTO> {
 	public readonly id: string;
 	public readonly tipeGarasi: TipeGarasi;
 	public readonly nomorUrut: number;
-	public readonly hargaHarian: number;
-	public readonly hargaListrikPerKwh: number | null;
-	private _status: StatusGarasi;
+	public readonly hargaHarian: number;                 // tarif sewa per hari (Rupiah)
+	public readonly hargaListrikPerKwh: number | null;   // tarif cas per kWh, khusus mobil listrik
+	private _status: StatusGarasi;                       // AVAILABLE atau USED
 	public readonly createdAt?: Date;
 
 	/**
-	 * Membuat instance baru GarasiModel dengan validasi lengkap.
+	 * Membuat instance GarasiModel baru dengan validasi data.
 	 *
-	 * @constructor
-	 * @param {GarasiDTO} data - Objek data transfer garasi.
-	 * @throws {Error} Jika nomor urut, id, harga harian, atau harga listrik tidak valid.
+	 * @param data data transfer objek garasi
 	 */
 	constructor(data: GarasiDTO) {
 		super();
@@ -221,51 +213,33 @@ export class GarasiModel extends BaseModel<GarasiDTO> {
 		return result;
 	}
 
-	/**
-	 * Mendapatkan status keterisian operasional garasi saat ini.
-	 *
-	 * @returns {StatusGarasi} 'AVAILABLE' atau 'USED'.
-	 */
 	public get status(): StatusGarasi {
 		return this._status;
 	}
 
-	/**
-	 * Menandai garasi sedang digunakan ('USED').
-	 *
-	 * @returns {void}
-	 */
 	public tandaiUsed(): void {
 		this._status = 'USED';
 	}
 
-	/**
-	 * Menandai garasi kembali kosong ('AVAILABLE').
-	 *
-	 * @returns {void}
-	 */
 	public tandaiAvailable(): void {
 		this._status = 'AVAILABLE';
 	}
 
 	/**
-	 * Menghitung harga sewa bulanan flat (25x harga sewa harian).
-	 *
-	 * @returns {number} Nominal biaya sewa bulanan.
+	 * Menghitung harga sewa bulanan flat (25x tarif harian).
 	 */
 	public hitungHargaBulanan(): number {
 		return 25 * this.hargaHarian;
 	}
 
 	/**
-	 * Menghitung biaya pengisian daya listrik baterai mobil hingga penuh:
-	 * biayaListrik = (kapasitasPenuh - sisaBaterai) * hargaListrikPerKwh
-	 * Khusus untuk garasi tipe MOBIL_LISTRIK. Untuk tipe lainnya menghasilkan 0.
+	 * Menghitung biaya cas mobil listrik sampai penuh.
+	 * Rumus: (kapasitasPenuh - sisaBaterai) * hargaListrikPerKwh.
 	 *
-	 * @param {number} kapasitasPenuhKwh - Kapasitas baterai penuh kendaraan dalam kWh (> 0).
-	 * @param {number} sisaBateraiKwh - Sisa baterai saat masuk garasi dalam kWh (0 <= sisa <= kapasitas).
-	 * @returns {number} Biaya listrik yang dibulatkan (Math.round).
-	 * @throws {Error} Jika kapasitas <= 0, sisa < 0, atau sisa > kapasitas.
+	 * @param kapasitasPenuhKwh kapasitas penuh baterai dalam kWh (harus > 0)
+	 * @param sisaBateraiKwh sisa baterai saat masuk dalam kWh (0 sampai kapasitas penuh)
+	 * @returns biaya listrik dalam Rupiah (dibulatkan)
+	 * @throws Error jika kapasitas <= 0, sisa negatif, atau sisa melebihi kapasitas
 	 */
 	public hitungBiayaListrik(kapasitasPenuhKwh: number, sisaBateraiKwh: number): number {
 		if (this.tipeGarasi !== 'MOBIL_LISTRIK') {

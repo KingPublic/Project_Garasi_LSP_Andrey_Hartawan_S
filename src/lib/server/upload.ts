@@ -1,7 +1,5 @@
 /**
- * @file upload.ts
- * @description Modul helper untuk menangani penyimpanan file gambar bukti pelunasan bayar
- * ke direktori static/uploads/ dan menghasilkan path relatif untuk disimpan di basis data.
+ * Helper untuk menyimpan file bukti transfer ke static/uploads/.
  */
 
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -9,16 +7,15 @@ import { extname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 export const UPLOAD_DIR = join(process.cwd(), 'static', 'uploads');
-export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 Megabytes
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // batas maksimal 5MB
 export const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
 
 /**
  * Menyimpan file gambar bukti bayar ke direktori static/uploads/.
  *
- * @function saveUploadFile
- * @param {File | Blob} file - Objek file yang diunggah dari form HTML.
- * @returns {Promise<string>} Path publik file relatif terhadap web root, e.g. "/uploads/abc-123.jpg".
- * @throws {Error} Jika file kosong, melebihi ukuran batas, atau ekstensinya tidak diizinkan.
+ * @param file file yang diunggah dari form
+ * @returns path publik relatif, misalnya "/uploads/uuid.jpg"
+ * @throws Error jika file kosong, melebihi 5MB, atau format tidak didukung
  */
 export async function saveUploadFile(file: File | Blob): Promise<string> {
 	if (!file || !(file instanceof Blob) || file.size === 0) {

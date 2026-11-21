@@ -9,17 +9,16 @@ import type { GarasiDTO, StatusGarasi, TipeGarasi } from '../models/types';
 import type { IGarasiRepository } from './interfaces';
 
 /**
- * Repository untuk operasi inventaris unit Garasi.
+ * Repository untuk operasi data unit garasi di database.
  *
- * @class GarasiRepository
- * @implements {IGarasiRepository}
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class GarasiRepository implements IGarasiRepository {
 	/**
-	 * Mencari unit garasi berdasarkan ID kode unit (contoh: 'S001', 'C010', 'E999').
+	 * Mencari unit garasi berdasarkan ID kode unit (misalnya S001, C010, E999).
 	 *
-	 * @param {string} id - Kode unit garasi.
-	 * @returns {Promise<Garasi | null>} Objek Garasi atau null.
+	 * @param id - Kode unit garasi.
 	 */
 	public async findById(id: string): Promise<Garasi | null> {
 		return db.garasi.findUnique({
@@ -28,9 +27,7 @@ export class GarasiRepository implements IGarasiRepository {
 	}
 
 	/**
-	 * Mengambil seluruh unit garasi terurut berdasarkan ID.
-	 *
-	 * @returns {Promise<Garasi[]>} Daftar seluruh garasi.
+	 * Mengambil seluruh unit garasi terurut berdasarkan tipe dan nomor urut.
 	 */
 	public async findAll(): Promise<Garasi[]> {
 		return db.garasi.findMany({
@@ -39,10 +36,9 @@ export class GarasiRepository implements IGarasiRepository {
 	}
 
 	/**
-	 * Mengambil daftar unit garasi berdasarkan tipenya ('SEPEDA', 'MOBIL', 'MOBIL_LISTRIK').
+	 * Mengambil daftar unit garasi berdasarkan tipe (SEPEDA, MOBIL, MOBIL_LISTRIK).
 	 *
-	 * @param {TipeGarasi} tipe - Tipe garasi.
-	 * @returns {Promise<Garasi[]>} Daftar unit garasi terurut nomor urut.
+	 * @param tipe - Tipe garasi.
 	 */
 	public async findByTipe(tipe: TipeGarasi): Promise<Garasi[]> {
 		return db.garasi.findMany({
@@ -52,11 +48,9 @@ export class GarasiRepository implements IGarasiRepository {
 	}
 
 	/**
-	 * Mendapatkan nomor urut tertinggi saat ini untuk tipe garasi tertentu.
-	 * Menghasilkan 0 jika belum ada unit yang terdaftar untuk tipe tersebut.
+	 * Mengambil nomor urut tertinggi untuk tipe garasi tertentu (0 jika belum ada).
 	 *
-	 * @param {TipeGarasi} tipe - Tipe garasi.
-	 * @returns {Promise<number>} Nomor urut tertinggi (0..999).
+	 * @param tipe - Tipe garasi.
 	 */
 	public async getNomorUrutTerakhir(tipe: TipeGarasi): Promise<number> {
 		const garasiTerakhir = await db.garasi.findFirst({
@@ -68,10 +62,9 @@ export class GarasiRepository implements IGarasiRepository {
 	}
 
 	/**
-	 * Menyimpan sejumlah unit garasi baru secara massal (bulk insert).
+	 * Menyimpan banyak unit garasi sekaligus ke database.
 	 *
-	 * @param {GarasiDTO[]} garasiList - Daftar unit garasi yang telah dibuat oleh model generator.
-	 * @returns {Promise<number>} Jumlah unit yang berhasil disimpan.
+	 * @param garasiList - Daftar DTO garasi baru.
 	 */
 	public async createMany(garasiList: GarasiDTO[]): Promise<number> {
 		const result = await db.garasi.createMany({
@@ -90,11 +83,10 @@ export class GarasiRepository implements IGarasiRepository {
 	}
 
 	/**
-	 * Memperbarui status ketersediaan operasional unit garasi ('AVAILABLE' atau 'USED').
+	 * Memperbarui status ketersediaan unit garasi (AVAILABLE atau USED).
 	 *
-	 * @param {string} id - Kode unit garasi.
-	 * @param {StatusGarasi} status - Status baru.
-	 * @returns {Promise<Garasi>} Objek Garasi yang telah diperbarui.
+	 * @param id - Kode unit garasi.
+	 * @param status - Status baru.
 	 */
 	public async updateStatus(id: string, status: StatusGarasi): Promise<Garasi> {
 		return db.garasi.update({

@@ -1,17 +1,14 @@
 /**
- * @file password.ts
- * @description Modul hashing dan verifikasi kata sandi yang konsisten di semua runtime (Node.js dan Bun).
- * Menggunakan crypto.scryptSync dari standard library node:crypto dengan salt unik dan timingSafeEqual.
+ * Modul hashing dan verifikasi kata sandi memakai crypto.scryptSync bawaan node:crypto.
  */
 
 import crypto from 'node:crypto';
 
 /**
- * Melakukan hashing kata sandi dengan crypto.scryptSync.
+ * Hashing kata sandi memakai scrypt dengan salt acak 16 byte.
  *
- * @function hashPassword
- * @param {string} password - Kata sandi mentah.
- * @returns {Promise<string>} Hash kata sandi format $scrypt$<salt>$<hash>.
+ * @param password kata sandi mentah
+ * @returns hash berformat $scrypt$<salt>$<hash>
  */
 export async function hashPassword(password: string): Promise<string> {
 	const salt = crypto.randomBytes(16).toString('hex');
@@ -20,13 +17,11 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 /**
- * Memverifikasi kata sandi mentah terhadap hash yang tersimpan.
- * Mendukung format $scrypt$, $fallback_sha256$, Bun Argon2/bcrypt.
+ * Memverifikasi kecocokan kata sandi mentah dengan hash tersimpan.
  *
- * @function verifyPassword
- * @param {string} password - Kata sandi mentah yang diinput.
- * @param {string} storedHash - Hash yang tersimpan di basis data.
- * @returns {Promise<boolean>} True jika kata sandi cocok.
+ * @param password kata sandi yang diinput
+ * @param storedHash hash yang tersimpan di database
+ * @returns true jika kata sandi cocok
  */
 export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
 	if (!password || !storedHash) {
@@ -43,6 +38,7 @@ export async function verifyPassword(password: string, storedHash: string): Prom
 		const bufB = Buffer.from(expectedHex, 'hex');
 
 		if (bufA.length !== bufB.length) return false;
+		// Memakai timingSafeEqual agar waktu eksekusi konstan dan aman dari timing attack
 		return crypto.timingSafeEqual(bufA, bufB);
 	}
 

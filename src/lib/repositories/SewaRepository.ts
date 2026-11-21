@@ -20,17 +20,16 @@ import type {
 } from './interfaces';
 
 /**
- * Repository untuk transaksi penyewaan garasi dan perpanjangan masa sewa.
+ * Repository untuk operasi transaksi sewa dan perpanjangan di database.
  *
- * @class SewaRepository
- * @implements {ISewaRepository}
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class SewaRepository implements ISewaRepository {
 	/**
-	 * Mencari detail transaksi sewa lengkap dengan relasi Garasi, Kendaraan, Penyewa, dan Perpanjangan.
+	 * Mencari detail transaksi sewa lengkap dengan relasi garasi, kendaraan, penyewa, dan riwayat perpanjangan.
 	 *
-	 * @param {number} id - ID transaksi sewa.
-	 * @returns {Promise<SewaDetail | null>} Detail transaksi sewa atau null.
+	 * @param id - ID transaksi sewa.
 	 */
 	public async findById(id: number): Promise<SewaDetail | null> {
 		return db.sewa.findUnique({
@@ -47,10 +46,9 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Mengambil seluruh riwayat sewa milik seorang penyewa tertentu.
+	 * Mengambil riwayat sewa milik seorang penyewa.
 	 *
-	 * @param {number} penyewaId - ID pengguna penyewa.
-	 * @returns {Promise<Array<Sewa & { garasi: Garasi; kendaraan: Kendaraan }>>} Daftar riwayat sewa.
+	 * @param penyewaId - ID akun penyewa.
 	 */
 	public async findByPenyewaId(
 		penyewaId: number
@@ -66,11 +64,9 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Mengambil seluruh jadwal sewa aktif pada suatu unit garasi untuk pengecekan anti-bentrok.
-	 * Mencakup sewa berstatus AKTIF dan MENUNGGU_VERIFIKASI agar tidak terjadi double-booking.
+	 * Mengambil transaksi sewa aktif/menunggu verifikasi pada satu unit garasi untuk cek anti-bentrok.
 	 *
-	 * @param {string} garasiId - Kode unit garasi.
-	 * @returns {Promise<Sewa[]>} Daftar transaksi sewa aktif pada unit garasi.
+	 * @param garasiId - Kode unit garasi.
 	 */
 	public async findActiveSewaByGarasiId(garasiId: string): Promise<Sewa[]> {
 		return db.sewa.findMany({
@@ -83,11 +79,9 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Mengambil jadwal sewa aktif untuk satu kendaraan tertentu berdasarkan kendaraanId.
-	 * Mencegah satu kendaraan menyewa lebih dari satu garasi di rentang waktu yang sama.
+	 * Mengambil transaksi sewa aktif/menunggu verifikasi untuk satu kendaraan terdaftar.
 	 *
-	 * @param {number} kendaraanId - ID kendaraan terdaftar.
-	 * @returns {Promise<Sewa[]>} Daftar transaksi sewa aktif untuk kendaraan tersebut.
+	 * @param kendaraanId - ID kendaraan.
 	 */
 	public async findActiveSewaByKendaraanId(kendaraanId: number): Promise<Sewa[]> {
 		return db.sewa.findMany({
@@ -100,12 +94,10 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Mengambil jadwal sewa aktif untuk satu kendaraan berdasarkan nomor plat dan penyewaId.
-	 * Digunakan saat pendaftaran kendaraan baru agar tidak bentrok dengan plat yang sama.
+	 * Mengambil transaksi sewa aktif/menunggu verifikasi untuk nomor plat kendaraan tertentu milik penyewa.
 	 *
-	 * @param {number} penyewaId - ID penyewa.
-	 * @param {string} nomorPlat - Nomor plat polisi kendaraan.
-	 * @returns {Promise<Sewa[]>} Daftar sewa aktif untuk plat tersebut.
+	 * @param penyewaId - ID akun penyewa.
+	 * @param nomorPlat - Nomor plat kendaraan.
 	 */
 	public async findActiveSewaByNomorPlat(penyewaId: number, nomorPlat: string): Promise<Sewa[]> {
 		return db.sewa.findMany({
@@ -124,9 +116,7 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Mengambil seluruh transaksi sewa aktif / pending verifikasi di sistem (mencegah masalah N+1 query).
-	 *
-	 * @returns {Promise<Sewa[]>} Daftar seluruh sewa aktif.
+	 * Mengambil seluruh transaksi sewa yang sedang aktif atau menunggu verifikasi di sistem.
 	 */
 	public async findAllActiveSewa(): Promise<Sewa[]> {
 		return db.sewa.findMany({
@@ -138,9 +128,7 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Mengambil daftar transaksi sewa yang sedang menunggu verifikasi pembayaran oleh Admin.
-	 *
-	 * @returns {Promise<SewaDetail[]>} Daftar sewa yang butuh verifikasi.
+	 * Mengambil transaksi sewa yang sedang menunggu verifikasi pembayaran oleh Admin.
 	 */
 	public async findSewaMenungguVerifikasi(): Promise<SewaDetail[]> {
 		return db.sewa.findMany({
@@ -158,11 +146,10 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Memperbarui status transaksi sewa ('AKTIF' atau 'DITOLAK').
+	 * Memperbarui status transaksi sewa (misalnya AKTIF atau DITOLAK).
 	 *
-	 * @param {number} sewaId - ID transaksi sewa.
-	 * @param {StatusSewa} status - Status baru.
-	 * @returns {Promise<Sewa>} Transaksi sewa yang diperbarui.
+	 * @param sewaId - ID transaksi sewa.
+	 * @param status - Status baru.
 	 */
 	public async updateStatusSewa(sewaId: number, status: StatusSewa): Promise<Sewa> {
 		return db.sewa.update({
@@ -172,11 +159,9 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Mengambil daftar transaksi sewa yang sedang aktif pada hari ini (tanggalMulai <= today && tanggalSelesai > today).
-	 * Digunakan pada form Admin Perpanjangan Sewa.
+	 * Mengambil daftar transaksi sewa yang sedang aktif pada hari tertentu.
 	 *
-	 * @param {Date} today - Tanggal hari ini.
-	 * @returns {Promise<SewaDetail[]>} Daftar transaksi sewa aktif hari ini.
+	 * @param today - Tanggal acuan.
 	 */
 	public async findSewaAktifHariIni(today: Date): Promise<SewaDetail[]> {
 		const targetDate = normalizeToUtcDate(today);
@@ -198,10 +183,9 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Menyimpan transaksi sewa baru ke dalam basis data.
+	 * Menyimpan transaksi sewa baru ke database.
 	 *
-	 * @param {Omit<SewaDTO, 'id' | 'createdAt'>} data - Data transaksi sewa baru.
-	 * @returns {Promise<Sewa>} Transaksi sewa yang tersimpan.
+	 * @param data - Data transaksi sewa baru.
 	 */
 	public async create(data: Omit<SewaDTO, 'id' | 'createdAt'>): Promise<Sewa> {
 		return db.sewa.create({
@@ -224,13 +208,12 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Memperbarui tanggal selesai, mengakumulasi total biaya, dan menambah jumlah hari saat perpanjangan berhasil.
+	 * Memperbarui tanggal selesai, menambah biaya, dan menambah durasi hari sewa saat perpanjangan.
 	 *
-	 * @param {number} sewaId - ID transaksi sewa.
-	 * @param {Date} tanggalSelesaiBaru - Tanggal selesai baru.
-	 * @param {number} tambahanBiaya - Tambahan biaya perpanjangan.
-	 * @param {number} tambahanHari - Jumlah tambahan hari durasi perpanjangan.
-	 * @returns {Promise<Sewa>} Transaksi sewa yang telah diperbarui.
+	 * @param sewaId - ID transaksi sewa.
+	 * @param tanggalSelesaiBaru - Tanggal selesai baru.
+	 * @param tambahanBiaya - Nominal biaya tambahan.
+	 * @param tambahanHari - Durasi hari perpanjangan.
 	 */
 	public async updateTanggalSelesaiDanBiaya(
 		sewaId: number,
@@ -256,10 +239,9 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Menyimpan riwayat perpanjangan masa sewa ke tabel PerpanjanganSewa.
+	 * Menyimpan catatan riwayat perpanjangan sewa ke tabel PerpanjanganSewa.
 	 *
-	 * @param {Omit<PerpanjanganSewaDTO, 'id' | 'createdAt'>} data - Data perpanjangan.
-	 * @returns {Promise<PerpanjanganSewa>} Riwayat perpanjangan tersimpan.
+	 * @param data - Data perpanjangan sewa.
 	 */
 	public async createPerpanjangan(
 		data: Omit<PerpanjanganSewaDTO, 'id' | 'createdAt'>
@@ -277,10 +259,9 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Mengambil data laporan persewaan dengan 4 dimensi filter dinamis (bulan, hari, tipe garasi, penyewa).
+	 * Mengambil data laporan sewa dengan filter dinamis (bulan/tahun, tanggal harian, tipe garasi, penyewa).
 	 *
-	 * @param {LaporanFilterInput} filter - Parameter filter.
-	 * @returns {Promise<LaporanData>} Ringkasan total transaksi, total omzet, dan daftar transaksi.
+	 * @param filter - Parameter filter laporan.
 	 */
 	public async getLaporan(filter: LaporanFilterInput): Promise<LaporanData> {
 		const whereClause: Prisma.SewaWhereInput = {};

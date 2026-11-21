@@ -48,10 +48,11 @@ export interface BuatSewaParams {
 }
 
 /**
- * Representasi domain Transaksi Sewa Garasi.
+ * Menyimpan data dan aturan transaksi sewa garasi dan perpanjangan durasi.
+ * Menghitung total biaya (biaya sewa + listrik) dan mengecek bentrok jadwal.
  *
- * @class SewaModel
- * @extends {BaseModel<SewaDTO>}
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class SewaModel extends BaseModel<SewaDTO> {
 	public readonly id?: number;
@@ -252,6 +253,8 @@ export class SewaModel extends BaseModel<SewaDTO> {
 		const mB = normalizeToUtcDate(mulaiB).getTime();
 		const sB = normalizeToUtcDate(selesaiB).getTime();
 
+		// Perbandingan tanpa sama dengan (< dan >) agar jadwal yang bersambung
+		// (misalnya selesai tanggal 10, penyewa berikutnya mulai tanggal 10) tidak dianggap bentrok
 		return mA < sB && sA > mB;
 	}
 
@@ -400,6 +403,7 @@ export class SewaModel extends BaseModel<SewaDTO> {
 		let kursor = new Date(lamaUtc.getTime());
 		let jumlahBulan = 0;
 
+		// Memecah durasi per 1 bulan kalender penuh (tarif hemat 25x harga harian), lalu sisa harinya dikali tarif harian
 		while (true) {
 			const daysInMonth = SewaModel.getJumlahHariBulan(kursor);
 			const kandidat = addDays(kursor, daysInMonth);
@@ -428,34 +432,18 @@ export class SewaModel extends BaseModel<SewaDTO> {
 		};
 	}
 
-	/**
-	 * Mendapatkan status transaksi sewa saat ini.
-	 *
-	 * @returns {StatusSewa} 'AKTIF' atau 'SELESAI'.
-	 */
 	public get statusSewa(): StatusSewa {
 		return this._statusSewa;
 	}
 
-	/**
-	 * Menyetujui pembayaran sewa (status menjadi 'AKTIF').
-	 */
 	public approvePembayaran(): void {
 		this._statusSewa = 'AKTIF';
 	}
 
-	/**
-	 * Menolak bukti pembayaran sewa (status menjadi 'DITOLAK').
-	 */
 	public rejectPembayaran(): void {
 		this._statusSewa = 'DITOLAK';
 	}
 
-	/**
-	 * Menandai transaksi sewa telah selesai.
-	 *
-	 * @returns {void}
-	 */
 	public selesaikanSewa(): void {
 		this._statusSewa = 'SELESAI';
 	}

@@ -1,33 +1,25 @@
-/**
- * @file KendaraanModel.ts
- * @description Model domain OOP untuk kendaraan yang didaftarkan oleh penyewa.
- * Menangani validasi nomor plat, spesifikasi baterai mobil listrik, serta matriks kesesuaian garasi.
- */
-
 import { BaseModel } from './BaseModel';
 import type { KendaraanDTO, TipeGarasi, TipeKendaraan } from './types';
 
 /**
- * Representasi domain Kendaraan penyewa.
+ * Menyimpan data dan aturan kendaraan milik penyewa.
  *
- * @class KendaraanModel
- * @extends {BaseModel<KendaraanDTO>}
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class KendaraanModel extends BaseModel<KendaraanDTO> {
 	public readonly id?: number;
 	public readonly penyewaId: number;
 	public readonly tipeKendaraan: TipeKendaraan;
-	public readonly nomorPlat: string | null;
+	public readonly nomorPlat: string | null;            // null khusus sepeda manual
 	public readonly merekTipe: string;
-	public readonly kapasitasBateraiKwh: number | null;
+	public readonly kapasitasBateraiKwh: number | null;   // kapasitas dalam kWh, khusus mobil listrik
 	public readonly createdAt?: Date;
 
 	/**
-	 * Membuat instance baru KendaraanModel dengan validasi menyeluruh.
+	 * Membuat instance KendaraanModel baru dengan validasi.
 	 *
-	 * @constructor
-	 * @param {KendaraanDTO} data - Objek data transfer kendaraan.
-	 * @throws {Error} Jika validasi tipe kendaraan, plat nomor, merek/tipe, atau kapasitas baterai gagal.
+	 * @param data data transfer objek kendaraan
 	 */
 	constructor(data: KendaraanDTO) {
 		super();

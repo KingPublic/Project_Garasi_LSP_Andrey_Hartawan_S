@@ -1,4 +1,8 @@
 import 'dotenv/config';
+// Library: Prisma Client & @prisma/adapter-pg 7.10.1 (lisensi Apache-2.0)
+// Fungsi : menghubungkan aplikasi ke database PostgreSQL
+// Alasan : gratis, query rapi, dan tipe datanya langsung cocok dengan TypeScript
+// Docs   : https://www.prisma.io/docs
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client';
 
@@ -11,8 +15,8 @@ if (!databaseUrl) {
 const adapter = new PrismaPg({ connectionString: databaseUrl });
 
 /**
- * Singleton database client instance menggunakan Prisma 7 dengan PostgreSQL adapter.
- * Digunakan di seluruh server-side code (actions, endpoints, services, seeder).
+ * Instance tunggal database client Prisma dengan adapter PostgreSQL.
+ * Dipakai di seluruh server code (action, service, seeder).
  */
 export const db = new PrismaClient({ adapter });
 

@@ -20,9 +20,10 @@ export interface RingkasanDashboardAdmin {
 }
 
 /**
- * Service untuk menyajikan laporan dan metrik analitik bisnis.
+ * Service untuk penyajian laporan dan ringkasan statistik dashboard admin.
  *
- * @class LaporanService
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class LaporanService {
 	private sewaRepo: ISewaRepository;
@@ -32,10 +33,9 @@ export class LaporanService {
 	/**
 	 * Konstruktor LaporanService dengan dependency injection.
 	 *
-	 * @constructor
-	 * @param {ISewaRepository} [sewaRepo=sewaRepository] - Repository sewa.
-	 * @param {IGarasiRepository} [garasiRepo=garasiRepository] - Repository garasi.
-	 * @param {IUserRepository} [userRepo=userRepository] - Repository user.
+	 * @param sewaRepo - Repository sewa.
+	 * @param garasiRepo - Repository garasi.
+	 * @param userRepo - Repository user.
 	 */
 	constructor(
 		sewaRepo: ISewaRepository = sewaRepository,
@@ -48,23 +48,16 @@ export class LaporanService {
 	}
 
 	/**
-	 * Mengambil data laporan sewa garasi dan ringkasan omzet dengan 4 filter dimensi:
-	 * 1. Per bulan dalam tahun tertentu (e.g. bulan 11 tahun 2026).
-	 * 2. Per hari dalam bulan tertentu (e.g. tanggal '2026-11-21').
-	 * 3. Per Tipe Garasi ('SEPEDA', 'MOBIL', 'MOBIL_LISTRIK').
-	 * 4. Per Penyewa.
+	 * Mengambil data laporan sewa dan pendapatan dengan filter (bulan/tahun, tanggal, tipe garasi, penyewa).
 	 *
-	 * @param {LaporanFilterInput} filter - Parameter filter.
-	 * @returns {Promise<LaporanData>} Ringkasan transaksi, omzet, dan daftar transaksi.
+	 * @param filter - Parameter filter laporan.
 	 */
 	public async getLaporan(filter: LaporanFilterInput): Promise<LaporanData> {
 		return this.sewaRepo.getLaporan(filter);
 	}
 
 	/**
-	 * Mengambil ringkasan metrik statistik operasional untuk dashboard Admin.
-	 *
-	 * @returns {Promise<RingkasanDashboardAdmin>} Ringkasan statistik operasional.
+	 * Mengambil ringkasan statistik operasional untuk dashboard admin.
 	 */
 	public async getRingkasanDashboard(): Promise<RingkasanDashboardAdmin> {
 		const garasiList = await this.garasiRepo.findAll();

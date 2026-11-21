@@ -1,35 +1,28 @@
-/**
- * @file UserModel.ts
- * @description Model domain OOP untuk pengguna (User) sistem penyewaan garasi.
- * Menerapkan enkapsulasi data, validasi registrasi penyewa, dan aturan otorisasi status verifikasi.
- */
-
 import { BaseModel } from './BaseModel';
 import type { Role, StatusVerifikasi, UserDTO } from './types';
 
 /**
- * Representasi domain pengguna (Admin atau Penyewa).
+ * Menyimpan data dan aturan pengguna (Admin dan Penyewa).
+ * Mengatur hak akses sewa berdasarkan status verifikasi identitas (KTP/NIK).
  *
- * @class UserModel
- * @extends {BaseModel<UserDTO>}
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 export class UserModel extends BaseModel<UserDTO> {
 	public readonly id?: number;
-	public readonly nik: string | null;
+	public readonly nik: string | null;                  // wajib 16 digit angka khusus penyewa
 	private _namaLengkap: string;
 	private _noTelepon: string;
 	public readonly email: string;
-	public readonly role: Role;
-	private _statusVerifikasi: StatusVerifikasi;
+	public readonly role: Role;                          // ADMIN atau PENYEWA
+	private _statusVerifikasi: StatusVerifikasi;         // PENDING, APPROVED, REJECTED
 	public readonly passwordHash?: string;
 	public readonly createdAt?: Date;
 
 	/**
-	 * Membuat instance baru dari UserModel dengan validasi integritas data.
+	 * Membuat instance UserModel baru dengan validasi data.
 	 *
-	 * @constructor
-	 * @param {UserDTO} data - Objek data transfer pengguna.
-	 * @throws {Error} Jika validasi NIK, email, nomor telepon, atau nama lengkap gagal.
+	 * @param data data transfer objek pengguna
 	 */
 	constructor(data: UserDTO) {
 		super();
@@ -163,67 +156,32 @@ export class UserModel extends BaseModel<UserDTO> {
 		}
 	}
 
-	/**
-	 * Mendapatkan nama lengkap pengguna.
-	 *
-	 * @returns {string} Nama lengkap.
-	 */
 	public get namaLengkap(): string {
 		return this._namaLengkap;
 	}
 
-	/**
-	 * Mengubah nama lengkap pengguna dengan validasi.
-	 *
-	 * @param {string} value - Nama baru.
-	 */
 	public set namaLengkap(value: string) {
 		UserModel.validateNamaLengkap(value);
 		this._namaLengkap = value.trim();
 	}
 
-	/**
-	 * Mendapatkan nomor telepon pengguna.
-	 *
-	 * @returns {string} Nomor telepon.
-	 */
 	public get noTelepon(): string {
 		return this._noTelepon;
 	}
 
-	/**
-	 * Mengubah nomor telepon pengguna dengan validasi.
-	 *
-	 * @param {string} value - Nomor telepon baru.
-	 */
 	public set noTelepon(value: string) {
 		UserModel.validateNoTelepon(value);
 		this._noTelepon = value.trim();
 	}
 
-	/**
-	 * Mendapatkan status verifikasi pengguna saat ini.
-	 *
-	 * @returns {StatusVerifikasi} Status verifikasi ('PENDING' | 'APPROVED' | 'REJECTED').
-	 */
 	public get statusVerifikasi(): StatusVerifikasi {
 		return this._statusVerifikasi;
 	}
 
-	/**
-	 * Menyetujui pendaftaran penyewa (status menjadi 'APPROVED').
-	 *
-	 * @returns {void}
-	 */
 	public approve(): void {
 		this._statusVerifikasi = 'APPROVED';
 	}
 
-	/**
-	 * Menolak pendaftaran penyewa (status menjadi 'REJECTED').
-	 *
-	 * @returns {void}
-	 */
 	public reject(): void {
 		this._statusVerifikasi = 'REJECTED';
 	}
