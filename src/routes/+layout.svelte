@@ -39,6 +39,7 @@
 	let breadcrumbText = $derived.by(() => {
 		if (currentPath === '/admin/garasi') return 'Admin / Manajemen Unit Garasi';
 		if (currentPath === '/admin/verifikasi') return 'Admin / Verifikasi Calon Penyewa';
+		if (currentPath === '/admin/pembayaran') return 'Admin / Verifikasi Pembayaran';
 		if (currentPath === '/admin/perpanjang') return 'Admin / Perpanjangan Masa Sewa';
 		if (currentPath === '/admin/laporan') return 'Admin / Laporan & Keuangan';
 		if (currentPath === '/penyewa') return 'Penyewa / Dashboard Utama';
@@ -100,6 +101,7 @@
 									<span>Verifikasi Calon</span>
 								</a>
 
+								<!-- Menu verifikasi pembayaran di-keep jika dibutuhkan di masa mendatang
 								<a
 									href="/admin/pembayaran"
 									class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all {isActive('/admin/pembayaran') ? 'bg-white/15 text-white font-bold shadow-xs' : 'text-slate-400 hover:text-white hover:bg-white/5'}"
@@ -107,6 +109,7 @@
 									<DollarSignIcon size={18} class={isActive('/admin/pembayaran') ? 'text-garage-orange' : 'text-slate-400'} />
 									<span>Verifikasi Pembayaran</span>
 								</a>
+								-->
 
 								<a
 									href="/admin/perpanjang"
@@ -243,7 +246,7 @@
 								{#if data.user.role === 'ADMIN'}
 									<a href="/admin/garasi" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-gunmetal">Unit Garasi</a>
 									<a href="/admin/verifikasi" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-gunmetal">Verifikasi Calon</a>
-									<a href="/admin/pembayaran" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-gunmetal">Verifikasi Pembayaran</a>
+									<!-- <a href="/admin/pembayaran" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-gunmetal">Verifikasi Pembayaran</a> -->
 									<a href="/admin/perpanjang" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-gunmetal">Perpanjangan Sewa</a>
 									<a href="/admin/laporan" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-gunmetal">Laporan & Keuangan</a>
 								{:else}

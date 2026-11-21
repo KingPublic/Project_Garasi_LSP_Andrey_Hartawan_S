@@ -61,8 +61,9 @@
 		const m = curEnd.getUTCMonth();
 		const d = curEnd.getUTCDate();
 
-		// Menambahkan 1 bulan penuh secara dinamis
-		const nextMonth = new Date(Date.UTC(y, m + 1, d, 0, 0, 0, 0));
+		// Menambahkan 1 bulan penuh secara dinamis memakai daysInCurMonth
+		const daysInCurMonth = new Date(Date.UTC(y, m + 1, 0, 0, 0, 0, 0)).getUTCDate();
+		const nextMonth = new Date(Date.UTC(y, m, d + daysInCurMonth, 0, 0, 0, 0));
 		tanggalSelesaiBaru = nextMonth.toISOString().slice(0, 10);
 	}
 
@@ -97,7 +98,7 @@
 			if (sisaHari >= daysInCurMonth) {
 				totalBiaya += 25 * hargaHarian;
 				sisaHari -= daysInCurMonth;
-				ptr = new Date(Date.UTC(ptr.getUTCFullYear(), ptr.getUTCMonth() + 1, ptr.getUTCDate(), 0, 0, 0, 0));
+				ptr = new Date(Date.UTC(ptr.getUTCFullYear(), ptr.getUTCMonth(), ptr.getUTCDate() + daysInCurMonth, 0, 0, 0, 0));
 			} else {
 				totalBiaya += sisaHari * hargaHarian;
 				sisaHari = 0;

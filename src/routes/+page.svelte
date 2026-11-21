@@ -6,11 +6,6 @@
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<!-- Hero Section -->
 		<div class="text-center max-w-3xl mx-auto">
-			<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-prussian/5 border border-prussian/10 text-prussian text-xs font-semibold mb-6">
-				<span class="w-2 h-2 rounded-full bg-garage-orange"></span>
-				Platform Persewaan Garasi & Charging Station EV Terintegrasi
-			</div>
-
 			<h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-prussian tracking-tight leading-tight">
 				Solusi Penitipan Kendaraan <br class="hidden sm:inline" />
 				<span class="text-prussian">Aman, Terstruktur, &</span> <span class="text-garage-orange">Transparan</span>

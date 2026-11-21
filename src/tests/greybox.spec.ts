@@ -290,6 +290,7 @@ class MockSewaRepository implements ISewaRepository {
 		const sewa = this.sewas.find((s) => s.id === sewaId);
 		if (!sewa) throw new Error('Sewa not found');
 		sewa.tanggalSelesai = normalizeToUtcDate(tanggalSelesaiBaru);
+		sewa.biayaSewa += tambahanBiaya;
 		sewa.totalBiaya += tambahanBiaya;
 		sewa.jumlahHari += tambahanHari;
 		return sewa;
@@ -331,7 +332,9 @@ class MockSewaRepository implements ISewaRepository {
 			if (detail) daftarTransaksi.push(detail);
 		}
 
-		const totalPendapatan = daftarTransaksi.reduce((acc, curr) => acc + curr.totalBiaya, 0);
+		const totalPendapatan = daftarTransaksi
+			.filter((t) => t.statusSewa === 'AKTIF' || t.statusSewa === 'SELESAI')
+			.reduce((acc, curr) => acc + curr.totalBiaya, 0);
 
 		return {
 			totalTransaksi: daftarTransaksi.length,

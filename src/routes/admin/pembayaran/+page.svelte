@@ -253,12 +253,11 @@
 								<td class="py-3 px-5 text-right">
 									<div class="flex items-center justify-end gap-2">
 										<!-- Form Setujui -->
-										<form method="POST" action="?/setujui">
+										<form method="POST" action="?/setujui" onsubmit={() => (isProcessingId = sewa.id)}>
 											<input type="hidden" name="sewaId" value={sewa.id} />
 											<button
 												type="submit"
 												disabled={isProcessingId === sewa.id}
-												onclick={() => (isProcessingId = sewa.id)}
 												class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs transition-all cursor-pointer disabled:opacity-60"
 											>
 												<CheckCircleIcon size={14} />

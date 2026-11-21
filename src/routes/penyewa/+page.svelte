@@ -340,7 +340,7 @@
 							<span class="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700">
 								{#if k.tipeKendaraan === 'SEPEDA'}
 									<BikeIcon size={16} class="text-sky-600" />
-								{:else if k.tipeKendaraan === 'MOTOR'}
+								{:else if k.tipeKendaraan === 'SEPEDA_MOTOR'}
 									<BikeIcon size={16} class="text-sky-700" />
 								{:else if k.tipeKendaraan === 'MOBIL'}
 									<CarIcon size={16} class="text-amber-600" />

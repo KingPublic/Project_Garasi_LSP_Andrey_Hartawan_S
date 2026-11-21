@@ -28,12 +28,14 @@
   - Mencegah *double booking* pada garasi yang sama dengan validasi rentang tanggal kalender `[tanggalMulai, tanggalSelesai)`.
 - **Verifikasi Identitas KTP/NIK 16 Digit**:
   - Proteksi registrasi dengan validasi ketat NIK 16 digit numerik. Calon penyewa berstatus `PENDING` wajib diverifikasi oleh Administrator sebelum diizinkan menyewa.
+- **Verifikasi Pembayaran & Anti-Bentrok Kendaraan**:
+  - Transaksi sewa baru wajib melalui peninjauan bukti transfer oleh Administrator (`/admin/pembayaran`) sebelum berstatus `AKTIF`. Sistem mencegah kendaraan yang sama disewa di beberapa unit garasi pada tanggal yang bertabrakan.
 - **Perpanjangan Masa Sewa Dinamis**:
   - Administrator dapat memperpanjang sewa aktif dengan perhitungan biaya otomatis (pemecahan paket bulanan 25x + sisa hari).
 - **Laporan Finansial Multi-Filter**:
   - Filter laporan pendapatan berdasarkan Bulan/Tahun, Tanggal Harian, Tipe Garasi, serta Riwayat Transaksi per Penyewa.
 - **Antarmuka Modern Bebas Emoticon**:
-  - Desain *dashboard* bernuansa gelap monokromatik terinspirasi tata letak profesional Rumany, menggunakan ikon SVG murni dan *palette* berstandar kontras tinggi.
+  - Desain *dashboard* bernuansa gelap monokromatik dengan tata letak profesional, menggunakan ikon SVG murni dan *palette* berstandar kontras tinggi.
 
 ---
 
@@ -191,7 +193,7 @@ Project_Garasi_LSP/
 │   │   ├── +page.svelte           # Landing page publik GARASI TA
 │   │   ├── login/                 # Portal autentikasi masuk
 │   │   ├── register/              # Pendaftaran akun calon penyewa
-│   │   ├── admin/                 # Panel Administrator (Garasi, Verifikasi, Perpanjang, Laporan)
+│   │   ├── admin/                 # Panel Administrator (Garasi, Verifikasi Calon, Pembayaran, Perpanjang, Laporan)
 │   │   ├── penyewa/               # Panel Penyewa (Dashboard, Sewa Baru)
 │   │   └── api/                   # REST Endpoints (Pengecekan Ketersediaan Garasi)
 │   └── tests/                     # Test Suite (blackbox.spec.ts, whitebox.spec.ts, greybox.spec.ts)

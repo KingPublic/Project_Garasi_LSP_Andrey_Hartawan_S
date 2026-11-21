@@ -101,7 +101,8 @@ export const actions: Actions = {
 				jumlahHari,
 				sisaBateraiKwh,
 				buktiBayarPath,
-				statusSewa: 'MENUNGGU_VERIFIKASI'
+				// Langsung berstatus AKTIF sesuai alur standar uji LSP (upload bukti bayar langsung aktif & garasi used)
+				statusSewa: 'AKTIF'
 			});
 
 			throw redirect(303, '/penyewa');

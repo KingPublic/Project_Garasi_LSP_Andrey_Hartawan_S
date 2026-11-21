@@ -145,6 +145,15 @@
 	);
 
 	// Cost calculation derivation
+	let maxHariHarian = $derived.by(() => {
+		if (!tanggalMulai) return 30;
+		const parts = tanggalMulai.split("-").map(Number);
+		if (parts.length !== 3) return 30;
+		const [year, month] = parts;
+		const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+		return daysInMonth - 1;
+	});
+
 	let costCalculation = $derived.by(() => {
 		if (!selectedGarasi) {
 			return {
@@ -159,7 +168,6 @@
 		let biayaGarasi = 0;
 
 		if (tipeSewa === "BULANAN") {
-			biayaGarasi = hargaHarian * 25; // Aturan sertifikasi LSP: bulanan flat 25x tarif harian
 			biayaGarasi = hargaHarian * 25; // Paket bulanan: hemat flat 25x tarif harian
 		} else {
 			biayaGarasi = hargaHarian * (jumlahHari || 1);
@@ -176,8 +184,9 @@
 			const sisa = sisaBateraiKwh || 0;
 			if (kapasitas > sisa) {
 				kwhDibutuhkan = kapasitas - sisa;
-				biayaListrik =
-					kwhDibutuhkan * selectedGarasi.hargaListrikPerKwh;
+				biayaListrik = Math.round(
+					kwhDibutuhkan * selectedGarasi.hargaListrikPerKwh
+				);
 			}
 		}
 
@@ -483,7 +492,7 @@
 							name="jumlahHari"
 							bind:value={jumlahHari}
 							min="1"
-							max="30"
+							max={maxHariHarian}
 							required
 							class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
 						/>
@@ -753,14 +762,6 @@
 			<div
 				class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600"
 			>
-				<p class="font-bold text-slate-800">
-					Nomor Rekening Pengelola GarasiPro:
-				</p>
-				<p class="mt-0.5">
-					Bank BCA: <span class="font-mono font-bold text-prussian"
-						>123-456-7890</span
-					> a.n. GarasiPro LSP
-				</p>
 				<p class="font-bold text-slate-800">
 					Nomor Rekening Pengelola Garasi Ta:
 				</p>

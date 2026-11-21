@@ -242,6 +242,9 @@ export class SewaRepository implements ISewaRepository {
 			where: { id: sewaId },
 			data: {
 				tanggalSelesai: normalizeToUtcDate(tanggalSelesaiBaru),
+				biayaSewa: {
+					increment: tambahanBiaya
+				},
 				totalBiaya: {
 					increment: tambahanBiaya
 				},
@@ -327,7 +330,9 @@ export class SewaRepository implements ISewaRepository {
 			orderBy: { tanggalMulai: 'desc' }
 		});
 
-		const totalPendapatan = daftarTransaksi.reduce((acc, curr) => acc + curr.totalBiaya, 0);
+		const totalPendapatan = daftarTransaksi
+			.filter((t) => t.statusSewa === 'AKTIF' || t.statusSewa === 'SELESAI')
+			.reduce((acc, curr) => acc + curr.totalBiaya, 0);
 
 		return {
 			totalTransaksi: daftarTransaksi.length,
