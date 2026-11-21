@@ -18,3 +18,21 @@ export function formatRupiah(amount: number): string {
 		maximumFractionDigits: 0
 	}).format(amount);
 }
+
+/**
+ * Memformat objek Date atau string tanggal menjadi format tanggal lokal Indonesia (e.g. "21 Nov 2026").
+ *
+ * @function formatDateIndo
+ * @param {Date | string} date - Tanggal yang ingin diformat.
+ * @returns {string} String representasi tanggal lokal Indonesia.
+ */
+export function formatDateIndo(date: Date | string): string {
+	const d = typeof date === 'string' ? new Date(date) : date;
+	if (isNaN(d.getTime())) return '-';
+	return new Intl.DateTimeFormat('id-ID', {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric',
+		timeZone: 'UTC'
+	}).format(d);
+}

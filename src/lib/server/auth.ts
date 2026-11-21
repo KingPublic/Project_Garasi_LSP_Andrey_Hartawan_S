@@ -20,6 +20,7 @@ export interface SessionUser {
 	namaLengkap: string;
 	role: Role;
 	statusVerifikasi: StatusVerifikasi;
+	nik?: string | null;
 }
 
 /**
