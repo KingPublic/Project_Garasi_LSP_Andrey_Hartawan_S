@@ -369,9 +369,17 @@
 
 								<!-- Status Sewa -->
 								<td class="py-3.5 px-4">
-									{#if sewa.statusSewa === 'AKTIF'}
+									{#if sewa.statusSewa === 'MENUNGGU_VERIFIKASI'}
+										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+											<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Verifikasi
+										</span>
+									{:else if sewa.statusSewa === 'AKTIF'}
 										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
 											<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Aktif
+										</span>
+									{:else if sewa.statusSewa === 'DITOLAK'}
+										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
+											<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Ditolak
 										</span>
 									{:else}
 										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">

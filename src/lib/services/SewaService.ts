@@ -8,7 +8,7 @@ import type { Garasi, Kendaraan, PerpanjanganSewa, Sewa } from '../generated/pri
 import { KendaraanModel } from '../models/KendaraanModel';
 import { SewaModel } from '../models/SewaModel';
 import { UserModel } from '../models/UserModel';
-import type { Role, StatusVerifikasi, TipeGarasi, TipeKendaraan, TipeSewa } from '../models/types';
+import type { Role, StatusSewa, StatusVerifikasi, TipeGarasi, TipeKendaraan, TipeSewa } from '../models/types';
 import { getTodayUtcDate, normalizeToUtcDate } from '../utils/date';
 import type {
 	IGarasiRepository,
@@ -35,6 +35,7 @@ export interface BuatSewaServiceParams {
 	jumlahHari?: number;
 	sisaBateraiKwh?: number | null;
 	buktiBayarPath: string;
+	statusSewa?: StatusSewa;
 	referenceDateToday?: Date | string;
 }
 
@@ -163,8 +164,16 @@ export class SewaService {
 		});
 		validatorKendaraan.validasiKesesuaianGarasi(garasi.tipeGarasi as TipeGarasi);
 
-		// 5. Ambil jadwal aktif pada garasi untuk pengecekan anti-bentrok
+		// 5. Ambil jadwal aktif pada garasi untuk pengecekan anti-bentrok garasi
 		const jadwalAktif = await this.sewaRepo.findActiveSewaByGarasiId(garasi.id);
+
+		// Ambil jadwal sewa aktif pada kendaraan (mencegah 1 kendaraan menyewa 2 garasi di waktu yang sama)
+		let jadwalAktifKendaraan: Sewa[] = [];
+		if (params.kendaraanId) {
+			jadwalAktifKendaraan = await this.sewaRepo.findActiveSewaByKendaraanId(params.kendaraanId);
+		} else if (nomorPlatFinal) {
+			jadwalAktifKendaraan = await this.sewaRepo.findActiveSewaByNomorPlat(params.penyewaId, nomorPlatFinal);
+		}
 
 		// 6. Instansiasi dan validasi SewaModel secara ketat sebelum mutasi basis data
 		const sewaModel = SewaModel.buatSewaBaru({
@@ -181,8 +190,13 @@ export class SewaService {
 			sisaBateraiKwh: params.sisaBateraiKwh,
 			hargaListrikPerKwh: garasi.hargaListrikPerKwh,
 			buktiBayarPath: params.buktiBayarPath,
+			statusSewa: params.statusSewa ?? 'AKTIF',
 			referenceDateToday: params.referenceDateToday,
 			daftarJadwalAktif: jadwalAktif.map((j) => ({
+				tanggalMulai: j.tanggalMulai,
+				tanggalSelesai: j.tanggalSelesai
+			})),
+			daftarJadwalKendaraanAktif: jadwalAktifKendaraan.map((j) => ({
 				tanggalMulai: j.tanggalMulai,
 				tanggalSelesai: j.tanggalSelesai
 			}))
@@ -199,11 +213,12 @@ export class SewaService {
 		sewaDTO.kendaraanId = kendaraanId;
 		const savedSewa = await this.sewaRepo.create(sewaDTO);
 
-		// 9. Update status garasi menjadi USED jika tanggal sewa mencakup hari ini
+		// 9. Update status garasi menjadi USED HANYA jika sewa berstatus AKTIF dan mencakup hari ini
 		const todayUtc = params.referenceDateToday
 			? normalizeToUtcDate(params.referenceDateToday)
 			: getTodayUtcDate();
 		if (
+			savedSewa.statusSewa === 'AKTIF' &&
 			sewaModel.tanggalMulai.getTime() <= todayUtc.getTime() &&
 			sewaModel.tanggalSelesai.getTime() > todayUtc.getTime()
 		) {
@@ -307,6 +322,48 @@ export class SewaService {
 	 */
 	public async getSewaAktifHariIni(today: Date = getTodayUtcDate()): Promise<SewaDetail[]> {
 		return this.sewaRepo.findSewaAktifHariIni(today);
+	}
+
+	/**
+	 * Mengambil daftar seluruh transaksi sewa yang sedang menunggu verifikasi pembayaran oleh Admin.
+	 *
+	 * @returns {Promise<SewaDetail[]>} Daftar transaksi sewa berstatus MENUNGGU_VERIFIKASI.
+	 */
+	public async getDaftarSewaMenungguVerifikasi(): Promise<SewaDetail[]> {
+		return this.sewaRepo.findSewaMenungguVerifikasi();
+	}
+
+	/**
+	 * Admin memverifikasi bukti pembayaran transaksi sewa ('AKTIF' untuk setuju, 'DITOLAK' untuk tolak).
+	 *
+	 * @param {number} sewaId - ID transaksi sewa.
+	 * @param {'AKTIF' | 'DITOLAK'} status - Status keputusan verifikasi.
+	 * @returns {Promise<Sewa>} Transaksi sewa yang telah diperbarui.
+	 */
+	public async verifikasiPembayaran(sewaId: number, status: 'AKTIF' | 'DITOLAK'): Promise<Sewa> {
+		const sewa = await this.sewaRepo.findById(sewaId);
+		if (!sewa) {
+			throw new Error(`Transaksi sewa #${sewaId} tidak ditemukan.`);
+		}
+
+		if (sewa.statusSewa !== 'MENUNGGU_VERIFIKASI') {
+			throw new Error(`Transaksi sewa #${sewaId} saat ini berstatus '${sewa.statusSewa}', bukan 'MENUNGGU_VERIFIKASI'.`);
+		}
+
+		const updatedSewa = await this.sewaRepo.updateStatusSewa(sewaId, status);
+
+		// Jika disetujui (AKTIF) dan periode sewa mencakup hari ini, sinkronkan status garasi menjadi USED
+		if (status === 'AKTIF') {
+			const todayUtc = getTodayUtcDate();
+			if (
+				updatedSewa.tanggalMulai.getTime() <= todayUtc.getTime() &&
+				updatedSewa.tanggalSelesai.getTime() > todayUtc.getTime()
+			) {
+				await this.garasiRepo.updateStatus(updatedSewa.garasiId, 'USED');
+			}
+		}
+
+		return updatedSewa;
 	}
 }
 

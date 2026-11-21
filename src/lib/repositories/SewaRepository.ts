@@ -11,7 +11,7 @@ import {
 	getDaysInMonth,
 	normalizeToUtcDate
 } from '../utils/date';
-import type { PerpanjanganSewaDTO, SewaDTO } from '../models/types';
+import type { PerpanjanganSewaDTO, SewaDTO, StatusSewa } from '../models/types';
 import type {
 	ISewaRepository,
 	LaporanData,
@@ -67,6 +67,7 @@ export class SewaRepository implements ISewaRepository {
 
 	/**
 	 * Mengambil seluruh jadwal sewa aktif pada suatu unit garasi untuk pengecekan anti-bentrok.
+	 * Mencakup sewa berstatus AKTIF dan MENUNGGU_VERIFIKASI agar tidak terjadi double-booking.
 	 *
 	 * @param {string} garasiId - Kode unit garasi.
 	 * @returns {Promise<Sewa[]>} Daftar transaksi sewa aktif pada unit garasi.
@@ -75,23 +76,98 @@ export class SewaRepository implements ISewaRepository {
 		return db.sewa.findMany({
 			where: {
 				garasiId,
-				statusSewa: 'AKTIF'
+				statusSewa: { in: ['AKTIF', 'MENUNGGU_VERIFIKASI'] }
 			},
 			orderBy: { tanggalMulai: 'asc' }
 		});
 	}
 
 	/**
-	 * Mengambil seluruh transaksi sewa berstatus AKTIF di sistem (mencegah masalah N+1 query).
+	 * Mengambil jadwal sewa aktif untuk satu kendaraan tertentu berdasarkan kendaraanId.
+	 * Mencegah satu kendaraan menyewa lebih dari satu garasi di rentang waktu yang sama.
+	 *
+	 * @param {number} kendaraanId - ID kendaraan terdaftar.
+	 * @returns {Promise<Sewa[]>} Daftar transaksi sewa aktif untuk kendaraan tersebut.
+	 */
+	public async findActiveSewaByKendaraanId(kendaraanId: number): Promise<Sewa[]> {
+		return db.sewa.findMany({
+			where: {
+				kendaraanId,
+				statusSewa: { in: ['AKTIF', 'MENUNGGU_VERIFIKASI'] }
+			},
+			orderBy: { tanggalMulai: 'asc' }
+		});
+	}
+
+	/**
+	 * Mengambil jadwal sewa aktif untuk satu kendaraan berdasarkan nomor plat dan penyewaId.
+	 * Digunakan saat pendaftaran kendaraan baru agar tidak bentrok dengan plat yang sama.
+	 *
+	 * @param {number} penyewaId - ID penyewa.
+	 * @param {string} nomorPlat - Nomor plat polisi kendaraan.
+	 * @returns {Promise<Sewa[]>} Daftar sewa aktif untuk plat tersebut.
+	 */
+	public async findActiveSewaByNomorPlat(penyewaId: number, nomorPlat: string): Promise<Sewa[]> {
+		return db.sewa.findMany({
+			where: {
+				penyewaId,
+				kendaraan: {
+					nomorPlat: {
+						equals: nomorPlat.trim(),
+						mode: 'insensitive'
+					}
+				},
+				statusSewa: { in: ['AKTIF', 'MENUNGGU_VERIFIKASI'] }
+			},
+			orderBy: { tanggalMulai: 'asc' }
+		});
+	}
+
+	/**
+	 * Mengambil seluruh transaksi sewa aktif / pending verifikasi di sistem (mencegah masalah N+1 query).
 	 *
 	 * @returns {Promise<Sewa[]>} Daftar seluruh sewa aktif.
 	 */
 	public async findAllActiveSewa(): Promise<Sewa[]> {
 		return db.sewa.findMany({
 			where: {
-				statusSewa: 'AKTIF'
+				statusSewa: { in: ['AKTIF', 'MENUNGGU_VERIFIKASI'] }
 			},
 			orderBy: { tanggalMulai: 'asc' }
+		});
+	}
+
+	/**
+	 * Mengambil daftar transaksi sewa yang sedang menunggu verifikasi pembayaran oleh Admin.
+	 *
+	 * @returns {Promise<SewaDetail[]>} Daftar sewa yang butuh verifikasi.
+	 */
+	public async findSewaMenungguVerifikasi(): Promise<SewaDetail[]> {
+		return db.sewa.findMany({
+			where: {
+				statusSewa: 'MENUNGGU_VERIFIKASI'
+			},
+			include: {
+				garasi: true,
+				kendaraan: true,
+				penyewa: true,
+				perpanjangan: true
+			},
+			orderBy: { createdAt: 'desc' }
+		});
+	}
+
+	/**
+	 * Memperbarui status transaksi sewa ('AKTIF' atau 'DITOLAK').
+	 *
+	 * @param {number} sewaId - ID transaksi sewa.
+	 * @param {StatusSewa} status - Status baru.
+	 * @returns {Promise<Sewa>} Transaksi sewa yang diperbarui.
+	 */
+	public async updateStatusSewa(sewaId: number, status: StatusSewa): Promise<Sewa> {
+		return db.sewa.update({
+			where: { id: sewaId },
+			data: { statusSewa: status }
 		});
 	}
 

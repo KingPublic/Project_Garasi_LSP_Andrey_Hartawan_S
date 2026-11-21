@@ -256,12 +256,12 @@
 								id="hargaListrikPerKwh"
 								name="hargaListrikPerKwh"
 								bind:value={hargaListrikPerKwh}
-								min="0"
+								min="100"
 								step="100"
 								required
 								class="w-full px-3.5 py-2 rounded-xl border border-emerald-400 bg-emerald-50/30 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-xs"
 							/>
-							<p class="text-[10px] text-emerald-700 mt-1">Biaya pengisian daya baterai EV</p>
+							<p class="text-[10px] text-emerald-700 mt-1">Biaya pengisian daya baterai EV (wajib &gt; Rp 0)</p>
 						</div>
 					{/if}
 				</div>

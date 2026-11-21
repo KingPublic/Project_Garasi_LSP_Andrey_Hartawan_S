@@ -16,6 +16,7 @@ import type {
 	PerpanjanganSewaDTO,
 	SewaDTO,
 	StatusGarasi,
+	StatusSewa,
 	StatusVerifikasi,
 	TipeGarasi,
 	UserDTO
@@ -70,9 +71,13 @@ export interface ISewaRepository {
 	findById(id: number): Promise<SewaDetail | null>;
 	findByPenyewaId(penyewaId: number): Promise<Array<Sewa & { garasi: Garasi; kendaraan: Kendaraan }>>;
 	findActiveSewaByGarasiId(garasiId: string): Promise<Sewa[]>;
+	findActiveSewaByKendaraanId(kendaraanId: number): Promise<Sewa[]>;
+	findActiveSewaByNomorPlat(penyewaId: number, nomorPlat: string): Promise<Sewa[]>;
 	findAllActiveSewa(): Promise<Sewa[]>;
 	findSewaAktifHariIni(today: Date): Promise<SewaDetail[]>;
+	findSewaMenungguVerifikasi(): Promise<SewaDetail[]>;
 	create(data: Omit<SewaDTO, 'id' | 'createdAt'>): Promise<Sewa>;
+	updateStatusSewa(sewaId: number, status: StatusSewa): Promise<Sewa>;
 	updateTanggalSelesaiDanBiaya(
 		sewaId: number,
 		tanggalSelesaiBaru: Date,

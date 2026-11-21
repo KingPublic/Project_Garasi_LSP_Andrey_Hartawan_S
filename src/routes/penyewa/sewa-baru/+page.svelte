@@ -333,7 +333,7 @@
 							class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-medium"
 						>
 							<option value="SEPEDA">Sepeda Manual</option>
-							<option value="MOTOR">Sepeda Motor</option>
+							<option value="SEPEDA_MOTOR">Sepeda Motor</option>
 							<option value="MOBIL"
 								>Mobil Konvensional (Bensin/Diesel)</option
 							>
@@ -357,10 +357,11 @@
 							id="merekTipe"
 							name="merekTipe"
 							bind:value={merekTipe}
-							placeholder="Contoh: Toyota Avanza / Polygon"
+							placeholder="Contoh: Honda HR-V / Toyota Veloz"
 							required
-							class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+							class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-garage-orange focus:ring-2 focus:ring-garage-orange/20"
 						/>
+						<p class="text-[11px] text-slate-500 mt-1">Merek dan model unit kendaraan.</p>
 					</div>
 
 					{#if tipeKendaraan !== "SEPEDA"}
@@ -378,10 +379,11 @@
 								id="nomorPlat"
 								name="nomorPlat"
 								bind:value={nomorPlat}
-								placeholder="Contoh: B 1234 ABC"
+								placeholder="Contoh: DD 1234 TA"
 								required
-								class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm uppercase"
+								class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm uppercase focus:border-garage-orange focus:ring-2 focus:ring-garage-orange/20"
 							/>
+							<p class="text-[11px] text-slate-500 mt-1">Wajib plat polisi resmi (huruf kapital).</p>
 						</div>
 					{/if}
 
@@ -661,12 +663,26 @@
 						max={activeVehicle.kapasitasBateraiKwh || 100}
 						step="0.5"
 						required
-						class="w-full max-w-xs px-3.5 py-2.5 rounded-xl border border-emerald-400 bg-emerald-50/20 text-sm"
+						class="w-full max-w-xs px-3.5 py-2.5 rounded-xl border text-sm {sisaBateraiKwh > (activeVehicle.kapasitasBateraiKwh || 100) || sisaBateraiKwh < 0
+							? 'border-rose-400 bg-rose-50/30'
+							: 'border-emerald-400 bg-emerald-50/20'}"
 					/>
-					<p class="text-[11px] text-emerald-700 mt-1">
-						Kapasitas: {activeVehicle.kapasitasBateraiKwh} kWh • Pengisian:
-						{costCalculation.kwhDibutuhkan.toFixed(1)} kWh
-					</p>
+					{#if sisaBateraiKwh > (activeVehicle.kapasitasBateraiKwh || 100)}
+						<p class="text-xs text-rose-600 font-semibold mt-1 flex items-center gap-1">
+							<AlertTriangleIcon size={14} class="shrink-0" />
+							Sisa baterai ({sisaBateraiKwh} kWh) tidak boleh melebihi kapasitas total ({activeVehicle.kapasitasBateraiKwh} kWh).
+						</p>
+					{:else if sisaBateraiKwh < 0}
+						<p class="text-xs text-rose-600 font-semibold mt-1 flex items-center gap-1">
+							<AlertTriangleIcon size={14} class="shrink-0" />
+							Sisa baterai tidak boleh bernilai negatif.
+						</p>
+					{:else}
+						<p class="text-[11px] text-emerald-700 mt-1">
+							Kapasitas total: {activeVehicle.kapasitasBateraiKwh} kWh • Pengisian dibutuhkan:
+							<span class="font-bold">{costCalculation.kwhDibutuhkan.toFixed(1)} kWh</span>
+						</p>
+					{/if}
 				</div>
 			{/if}
 		</div>

@@ -52,10 +52,12 @@ export type StatusGarasi = 'AVAILABLE' | 'USED';
 
 /**
  * Status transaksi sewa:
- * - AKTIF: Masa sewa sedang berjalan.
+ * - MENUNGGU_VERIFIKASI: Penyewa telah mengunggah bukti bayar, menunggu verifikasi Admin.
+ * - AKTIF: Pembayaran telah diverifikasi Admin dan masa sewa sedang berjalan.
  * - SELESAI: Masa sewa telah berakhir.
+ * - DITOLAK: Bukti pembayaran ditolak oleh Admin.
  */
-export type StatusSewa = 'AKTIF' | 'SELESAI';
+export type StatusSewa = 'MENUNGGU_VERIFIKASI' | 'AKTIF' | 'SELESAI' | 'DITOLAK';
 
 /**
  * Representasi rentang jadwal untuk validasi anti-bentrok (anti-overlap).

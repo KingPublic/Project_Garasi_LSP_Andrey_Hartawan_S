@@ -19,6 +19,10 @@
 	const sewaAktifCount = $derived(
 		data.riwayatSewa.filter((s) => s.statusSewa === 'AKTIF').length
 	);
+
+	const sewaPendingCount = $derived(
+		data.riwayatSewa.filter((s) => s.statusSewa === 'MENUNGGU_VERIFIKASI').length
+	);
 </script>
 
 <svelte:head>
@@ -93,6 +97,25 @@
 				<p class="text-xs text-rose-800 mt-1">
 					Pendaftaran identitas Anda ditolak. Silakan hubungi administrator untuk pengecekan data NIK Anda.
 				</p>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Banner Notifikasi Menunggu Verifikasi Pembayaran -->
+	{#if sewaPendingCount > 0}
+		<div class="rounded-2xl bg-amber-50 border border-amber-200/80 p-4 text-amber-900 flex items-center justify-between gap-3 shadow-xs">
+			<div class="flex items-center gap-3">
+				<div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+					<ClockIcon size={18} />
+				</div>
+				<div>
+					<p class="text-xs font-bold text-amber-950">
+						{sewaPendingCount} Transaksi Sewa Menunggu Verifikasi Pembayaran
+					</p>
+					<p class="text-[11px] text-amber-800">
+						Admin sedang memeriksa bukti transfer Anda. Status garasi akan otomatis aktif setelah pembayaran disetujui.
+					</p>
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -270,9 +293,18 @@
 
 								<!-- Status Sewa -->
 								<td class="py-3 px-5">
-									{#if sewa.statusSewa === 'AKTIF'}
+									{#if sewa.statusSewa === 'MENUNGGU_VERIFIKASI'}
+										<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+											<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+											Menunggu Verifikasi
+										</span>
+									{:else if sewa.statusSewa === 'AKTIF'}
 										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
 											<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Aktif
+										</span>
+									{:else if sewa.statusSewa === 'DITOLAK'}
+										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+											<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Ditolak
 										</span>
 									{:else}
 										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">

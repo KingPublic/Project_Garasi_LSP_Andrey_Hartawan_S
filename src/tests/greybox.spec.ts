@@ -27,6 +27,7 @@ import type {
 	PerpanjanganSewaDTO,
 	SewaDTO,
 	StatusGarasi,
+	StatusSewa,
 	StatusVerifikasi,
 	TipeGarasi,
 	UserDTO
@@ -197,11 +198,48 @@ class MockSewaRepository implements ISewaRepository {
 	}
 
 	async findActiveSewaByGarasiId(garasiId: string): Promise<Sewa[]> {
-		return this.sewas.filter((s) => s.garasiId === garasiId && s.statusSewa === 'AKTIF');
+		return this.sewas.filter(
+			(s) => s.garasiId === garasiId && ['AKTIF', 'MENUNGGU_VERIFIKASI'].includes(s.statusSewa)
+		);
+	}
+
+	async findActiveSewaByKendaraanId(kendaraanId: number): Promise<Sewa[]> {
+		return this.sewas.filter(
+			(s) => s.kendaraanId === kendaraanId && ['AKTIF', 'MENUNGGU_VERIFIKASI'].includes(s.statusSewa)
+		);
+	}
+
+	async findActiveSewaByNomorPlat(penyewaId: number, nomorPlat: string): Promise<Sewa[]> {
+		const matchingKendaraans = await this.kendaraanRepo.findByPenyewaId(penyewaId);
+		const vIds = new Set(
+			matchingKendaraans
+				.filter((k) => k.nomorPlat?.toLowerCase() === nomorPlat.trim().toLowerCase())
+				.map((k) => k.id)
+		);
+		return this.sewas.filter(
+			(s) => vIds.has(s.kendaraanId) && ['AKTIF', 'MENUNGGU_VERIFIKASI'].includes(s.statusSewa)
+		);
 	}
 
 	async findAllActiveSewa(): Promise<Sewa[]> {
-		return this.sewas.filter((s) => s.statusSewa === 'AKTIF');
+		return this.sewas.filter((s) => ['AKTIF', 'MENUNGGU_VERIFIKASI'].includes(s.statusSewa));
+	}
+
+	async findSewaMenungguVerifikasi(): Promise<SewaDetail[]> {
+		const list = this.sewas.filter((s) => s.statusSewa === 'MENUNGGU_VERIFIKASI');
+		const result: SewaDetail[] = [];
+		for (const s of list) {
+			const detail = await this.findById(s.id);
+			if (detail) result.push(detail);
+		}
+		return result;
+	}
+
+	async updateStatusSewa(sewaId: number, status: StatusSewa): Promise<Sewa> {
+		const item = this.sewas.find((s) => s.id === sewaId);
+		if (!item) throw new Error(`Sewa #${sewaId} not found`);
+		item.statusSewa = status;
+		return item;
 	}
 
 	async findSewaAktifHariIni(today: Date): Promise<SewaDetail[]> {

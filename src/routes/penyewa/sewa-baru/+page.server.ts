@@ -100,7 +100,8 @@ export const actions: Actions = {
 				tanggalMulai,
 				jumlahHari,
 				sisaBateraiKwh,
-				buktiBayarPath
+				buktiBayarPath,
+				statusSewa: 'MENUNGGU_VERIFIKASI'
 			});
 
 			throw redirect(303, '/penyewa');

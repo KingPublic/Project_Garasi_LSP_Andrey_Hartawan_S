@@ -44,6 +44,7 @@ export interface BuatSewaParams {
 	statusSewa?: StatusSewa;
 	referenceDateToday?: Date | string;
 	daftarJadwalAktif?: JadwalRentang[];
+	daftarJadwalKendaraanAktif?: JadwalRentang[];
 }
 
 /**
@@ -138,9 +139,20 @@ export class SewaModel extends BaseModel<SewaDTO> {
 			tanggalSelesaiUtc = addDays(tanggalMulaiUtc, durasiHari);
 		}
 
-		// Validasi Anti-Bentrok Jadwal jika ada daftar jadwal aktif lain
+		// Validasi Anti-Bentrok Jadwal jika ada daftar jadwal aktif lain pada garasi ini
 		if (params.daftarJadwalAktif && params.daftarJadwalAktif.length > 0) {
 			SewaModel.validasiAntiBentrok(tanggalMulaiUtc, tanggalSelesaiUtc, params.daftarJadwalAktif);
+		}
+
+		// Validasi anti-bentrok jadwal pada kendaraan yang sama (kendaraan tidak bisa di 2 garasi bersamaan)
+		if (params.daftarJadwalKendaraanAktif && params.daftarJadwalKendaraanAktif.length > 0) {
+			for (const jk of params.daftarJadwalKendaraanAktif) {
+				if (SewaModel.cekBentrokJadwal(tanggalMulaiUtc, tanggalSelesaiUtc, jk.tanggalMulai, jk.tanggalSelesai)) {
+					throw new Error(
+						'Kendaraan ini sudah memiliki jadwal sewa aktif pada rentang tanggal tersebut (bentrok jadwal). Satu kendaraan tidak dapat menyewa lebih dari satu unit garasi di waktu yang bersamaan.'
+					);
+				}
+			}
 		}
 
 		// Validasi baterai khusus mobil listrik di garasi mobil listrik
@@ -423,6 +435,20 @@ export class SewaModel extends BaseModel<SewaDTO> {
 	 */
 	public get statusSewa(): StatusSewa {
 		return this._statusSewa;
+	}
+
+	/**
+	 * Menyetujui pembayaran sewa (status menjadi 'AKTIF').
+	 */
+	public approvePembayaran(): void {
+		this._statusSewa = 'AKTIF';
+	}
+
+	/**
+	 * Menolak bukti pembayaran sewa (status menjadi 'DITOLAK').
+	 */
+	public rejectPembayaran(): void {
+		this._statusSewa = 'DITOLAK';
 	}
 
 	/**
