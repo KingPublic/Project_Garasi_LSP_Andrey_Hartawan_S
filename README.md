@@ -29,7 +29,7 @@
 - **Verifikasi Identitas KTP/NIK 16 Digit**:
   - Proteksi registrasi dengan validasi ketat NIK 16 digit numerik. Calon penyewa berstatus `PENDING` wajib diverifikasi oleh Administrator sebelum diizinkan menyewa.
 - **Verifikasi Pembayaran & Anti-Bentrok Kendaraan**:
-  - Transaksi sewa baru wajib melalui peninjauan bukti transfer oleh Administrator (`/admin/pembayaran`) sebelum berstatus `AKTIF`. Sistem mencegah kendaraan yang sama disewa di beberapa unit garasi pada tanggal yang bertabrakan.
+  - Transaksi sewa baru langsung berstatus `AKTIF` setelah penyewa mengunggah bukti transfer pembayaran dan status fisik garasi otomatis tersinkronisasi, serta sistem secara ketat mencegah satu kendaraan disewa di lebih dari satu garasi pada tanggal yang bertabrakan.
 - **Perpanjangan Masa Sewa Dinamis**:
   - Administrator dapat memperpanjang sewa aktif dengan perhitungan biaya otomatis (pemecahan paket bulanan 25x + sisa hari).
 - **Laporan Finansial Multi-Filter**:

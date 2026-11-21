@@ -11,7 +11,8 @@
 		XCircleIcon,
 		AlertTriangleIcon,
 		CheckCircleIcon,
-		ArrowRightIcon
+		ArrowRightIcon,
+		FileTextIcon
 	} from '$lib/components/icons';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -404,7 +405,20 @@
 								{#each selectedSewa.perpanjangan as p (p.id)}
 									<div class="flex items-center justify-between p-2 rounded bg-slate-50">
 										<span>+{p.tambahanHari} hari ({formatDateIndo(p.tanggalSelesaiBaru)})</span>
-										<span class="font-semibold text-prussian">{formatRupiah(p.biayaTambahan)}</span>
+										<div class="flex items-center gap-3">
+											{#if p.buktiBayarPath}
+												<a
+													href={p.buktiBayarPath}
+													target="_blank"
+													rel="noreferrer"
+													class="inline-flex items-center gap-1 text-[11px] font-semibold text-garage-orange hover:underline"
+												>
+													<FileTextIcon size={12} />
+													<span>Lihat Bukti</span>
+												</a>
+											{/if}
+											<span class="font-semibold text-prussian">{formatRupiah(p.biayaTambahan)}</span>
+										</div>
 									</div>
 								{/each}
 							</div>
