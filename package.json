@@ -21,6 +21,7 @@
 		"test:watch": "vitest",
 		"db:generate": "prisma generate",
 		"db:push": "prisma db push",
+		"db:reset": "prisma db push --force-reset && bun run seed all",
 		"db:seed": "bun run src/lib/server/seed.ts",
 		"seed": "bun run src/lib/server/seed.ts",
 		"seed:user": "bun run src/lib/server/seed.ts user",
