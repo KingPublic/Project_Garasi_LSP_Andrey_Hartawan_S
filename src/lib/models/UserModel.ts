@@ -4,14 +4,16 @@
  * Menerapkan enkapsulasi data, validasi registrasi penyewa, dan aturan otorisasi status verifikasi.
  */
 
+import { BaseModel } from './BaseModel';
 import type { Role, StatusVerifikasi, UserDTO } from './types';
 
 /**
  * Representasi domain pengguna (Admin atau Penyewa).
  *
  * @class UserModel
+ * @extends {BaseModel<UserDTO>}
  */
-export class UserModel {
+export class UserModel extends BaseModel<UserDTO> {
 	public readonly id?: number;
 	public readonly nik: string | null;
 	private _namaLengkap: string;
@@ -30,6 +32,7 @@ export class UserModel {
 	 * @throws {Error} Jika validasi NIK, email, nomor telepon, atau nama lengkap gagal.
 	 */
 	constructor(data: UserDTO) {
+		super();
 		UserModel.validateRole(data.role);
 		UserModel.validateNik(data.nik, data.role);
 		UserModel.validateNamaLengkap(data.namaLengkap);

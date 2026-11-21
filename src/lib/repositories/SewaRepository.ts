@@ -4,7 +4,7 @@
  */
 
 import { db } from '../server/db';
-import type { PerpanjanganSewa, Sewa } from '../generated/prisma/client';
+import type { Garasi, Kendaraan, PerpanjanganSewa, Prisma, Sewa } from '../generated/prisma/client';
 import {
 	addDays,
 	createUtcDate,
@@ -50,11 +50,11 @@ export class SewaRepository implements ISewaRepository {
 	 * Mengambil seluruh riwayat sewa milik seorang penyewa tertentu.
 	 *
 	 * @param {number} penyewaId - ID pengguna penyewa.
-	 * @returns {Promise<Array<Sewa & { garasi: any; kendaraan: any }>>} Daftar riwayat sewa.
+	 * @returns {Promise<Array<Sewa & { garasi: Garasi; kendaraan: Kendaraan }>>} Daftar riwayat sewa.
 	 */
 	public async findByPenyewaId(
 		penyewaId: number
-	): Promise<Array<Sewa & { garasi: any; kendaraan: any }>> {
+	): Promise<Array<Sewa & { garasi: Garasi; kendaraan: Kendaraan }>> {
 		return db.sewa.findMany({
 			where: { penyewaId },
 			include: {
@@ -69,12 +69,26 @@ export class SewaRepository implements ISewaRepository {
 	 * Mengambil seluruh jadwal sewa aktif pada suatu unit garasi untuk pengecekan anti-bentrok.
 	 *
 	 * @param {string} garasiId - Kode unit garasi.
-	 * @returns {Promise<Sewa[]>} Daftar transaksi sewa aktif.
+	 * @returns {Promise<Sewa[]>} Daftar transaksi sewa aktif pada unit garasi.
 	 */
 	public async findActiveSewaByGarasiId(garasiId: string): Promise<Sewa[]> {
 		return db.sewa.findMany({
 			where: {
 				garasiId,
+				statusSewa: 'AKTIF'
+			},
+			orderBy: { tanggalMulai: 'asc' }
+		});
+	}
+
+	/**
+	 * Mengambil seluruh transaksi sewa berstatus AKTIF di sistem (mencegah masalah N+1 query).
+	 *
+	 * @returns {Promise<Sewa[]>} Daftar seluruh sewa aktif.
+	 */
+	public async findAllActiveSewa(): Promise<Sewa[]> {
+		return db.sewa.findMany({
+			where: {
 				statusSewa: 'AKTIF'
 			},
 			orderBy: { tanggalMulai: 'asc' }
@@ -134,17 +148,19 @@ export class SewaRepository implements ISewaRepository {
 	}
 
 	/**
-	 * Memperbarui tanggal selesai dan mengakumulasi total biaya sewa saat perpanjangan berhasil.
+	 * Memperbarui tanggal selesai, mengakumulasi total biaya, dan menambah jumlah hari saat perpanjangan berhasil.
 	 *
 	 * @param {number} sewaId - ID transaksi sewa.
 	 * @param {Date} tanggalSelesaiBaru - Tanggal selesai baru.
 	 * @param {number} tambahanBiaya - Tambahan biaya perpanjangan.
+	 * @param {number} tambahanHari - Jumlah tambahan hari durasi perpanjangan.
 	 * @returns {Promise<Sewa>} Transaksi sewa yang telah diperbarui.
 	 */
 	public async updateTanggalSelesaiDanBiaya(
 		sewaId: number,
 		tanggalSelesaiBaru: Date,
-		tambahanBiaya: number
+		tambahanBiaya: number,
+		tambahanHari: number
 	): Promise<Sewa> {
 		return db.sewa.update({
 			where: { id: sewaId },
@@ -152,6 +168,9 @@ export class SewaRepository implements ISewaRepository {
 				tanggalSelesai: normalizeToUtcDate(tanggalSelesaiBaru),
 				totalBiaya: {
 					increment: tambahanBiaya
+				},
+				jumlahHari: {
+					increment: tambahanHari
 				}
 			}
 		});
@@ -185,7 +204,7 @@ export class SewaRepository implements ISewaRepository {
 	 * @returns {Promise<LaporanData>} Ringkasan total transaksi, total omzet, dan daftar transaksi.
 	 */
 	public async getLaporan(filter: LaporanFilterInput): Promise<LaporanData> {
-		const whereClause: Record<string, any> = {};
+		const whereClause: Prisma.SewaWhereInput = {};
 
 		// Filter 1: Per bulan dalam tahun tertentu
 		if (filter.bulan && filter.tahun) {

@@ -1,13 +1,13 @@
 /**
  * @file GarasiService.ts
  * @description Service orkestrasi inventaris garasi, pembuatan massal berkelompok,
- * dan pengecekan ketersediaan unit anti-bentrok jadwal.
+ * dan pengecekan ketersediaan unit anti-bentrok jadwal dengan optimasi bebas query N+1.
  */
 
-import type { Garasi } from '../generated/prisma/client';
+import type { Garasi, Sewa } from '../generated/prisma/client';
 import { GarasiModel } from '../models/GarasiModel';
 import { SewaModel } from '../models/SewaModel';
-import type { TipeGarasi, TipeKendaraan } from '../models/types';
+import type { StatusGarasi, TipeGarasi, TipeKendaraan } from '../models/types';
 import { normalizeToUtcDate } from '../utils/date';
 import type { IGarasiRepository, ISewaRepository } from '../repositories/interfaces';
 import { garasiRepository } from '../repositories/GarasiRepository';
@@ -81,6 +81,7 @@ export class GarasiService {
 	/**
 	 * Mencari unit-unit garasi yang kompatibel dengan jenis kendaraan dan
 	 * TIDAK memiliki jadwal sewa aktif yang bertabrakan (anti-overlap) pada rentang tanggal yang dipilih.
+	 * Menggunakan satu query agregasi aktif untuk mencegah masalah performa N+1 query.
 	 *
 	 * @param {TipeKendaraan} tipeKendaraan - Tipe kendaraan penyewa.
 	 * @param {Date | string} tanggalMulai - Tanggal mulai sewa.
@@ -96,6 +97,16 @@ export class GarasiService {
 		const tSelesai = normalizeToUtcDate(tanggalSelesai);
 
 		const semuaGarasi = await this.garasiRepo.findAll();
+		const semuaSewaAktif = await this.sewaRepo.findAllActiveSewa();
+
+		// Mengelompokkan jadwal sewa aktif per garasi di memori (O(1) lookup, 0 database loop query)
+		const sewaPerGarasi = new Map<string, Sewa[]>();
+		for (const sewa of semuaSewaAktif) {
+			const list = sewaPerGarasi.get(sewa.garasiId) ?? [];
+			list.push(sewa);
+			sewaPerGarasi.set(sewa.garasiId, list);
+		}
+
 		const garasiTersedia: Garasi[] = [];
 
 		for (const g of semuaGarasi) {
@@ -105,7 +116,7 @@ export class GarasiService {
 				nomorUrut: g.nomorUrut,
 				hargaHarian: g.hargaHarian,
 				hargaListrikPerKwh: g.hargaListrikPerKwh,
-				status: g.status as any
+				status: g.status as StatusGarasi
 			});
 
 			// Cek kecocokan tipe kendaraan dengan garasi
@@ -114,7 +125,7 @@ export class GarasiService {
 			}
 
 			// Cek bentrok jadwal dengan sewa aktif pada garasi ini
-			const jadwalAktif = await this.sewaRepo.findActiveSewaByGarasiId(g.id);
+			const jadwalAktif = sewaPerGarasi.get(g.id) ?? [];
 			let isBentrok = false;
 
 			for (const sewa of jadwalAktif) {

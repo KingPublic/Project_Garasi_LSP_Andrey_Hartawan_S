@@ -70,9 +70,15 @@ export interface ISewaRepository {
 	findById(id: number): Promise<SewaDetail | null>;
 	findByPenyewaId(penyewaId: number): Promise<Array<Sewa & { garasi: Garasi; kendaraan: Kendaraan }>>;
 	findActiveSewaByGarasiId(garasiId: string): Promise<Sewa[]>;
+	findAllActiveSewa(): Promise<Sewa[]>;
 	findSewaAktifHariIni(today: Date): Promise<SewaDetail[]>;
 	create(data: Omit<SewaDTO, 'id' | 'createdAt'>): Promise<Sewa>;
-	updateTanggalSelesaiDanBiaya(sewaId: number, tanggalSelesaiBaru: Date, tambahanBiaya: number): Promise<Sewa>;
+	updateTanggalSelesaiDanBiaya(
+		sewaId: number,
+		tanggalSelesaiBaru: Date,
+		tambahanBiaya: number,
+		tambahanHari: number
+	): Promise<Sewa>;
 	createPerpanjangan(data: Omit<PerpanjanganSewaDTO, 'id' | 'createdAt'>): Promise<PerpanjanganSewa>;
 	getLaporan(filter: LaporanFilterInput): Promise<LaporanData>;
 }

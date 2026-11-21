@@ -1,7 +1,7 @@
 /**
  * @file greybox.spec.ts
  * @description Pengujian Unit Grey-box Testing untuk layer Services dan orkestrasi alur transaksi bisnis
- * menggunakan Mock / In-Memory Repositories.
+ * menggunakan Mock / In-Memory Repositories, mencakup proteksi IDOR, pencegahan data sampah, dan HMAC session cookie.
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -32,6 +32,8 @@ import type {
 	UserDTO
 } from '../lib/models/types';
 import { createUtcDate, normalizeToUtcDate } from '../lib/utils/date';
+import { createSession, getSession, SESSION_COOKIE_NAME, type SessionUser } from '../lib/server/auth';
+import type { Cookies } from '@sveltejs/kit';
 
 // =============================================================================
 // MOCK / IN-MEMORY REPOSITORIES UNTUK GREY-BOX TESTING
@@ -198,6 +200,10 @@ class MockSewaRepository implements ISewaRepository {
 		return this.sewas.filter((s) => s.garasiId === garasiId && s.statusSewa === 'AKTIF');
 	}
 
+	async findAllActiveSewa(): Promise<Sewa[]> {
+		return this.sewas.filter((s) => s.statusSewa === 'AKTIF');
+	}
+
 	async findSewaAktifHariIni(today: Date): Promise<SewaDetail[]> {
 		const target = normalizeToUtcDate(today).getTime();
 		const list = this.sewas.filter(
@@ -240,12 +246,14 @@ class MockSewaRepository implements ISewaRepository {
 	async updateTanggalSelesaiDanBiaya(
 		sewaId: number,
 		tanggalSelesaiBaru: Date,
-		tambahanBiaya: number
+		tambahanBiaya: number,
+		tambahanHari: number
 	): Promise<Sewa> {
 		const sewa = this.sewas.find((s) => s.id === sewaId);
 		if (!sewa) throw new Error('Sewa not found');
 		sewa.tanggalSelesai = normalizeToUtcDate(tanggalSelesaiBaru);
 		sewa.totalBiaya += tambahanBiaya;
+		sewa.jumlahHari += tambahanHari;
 		return sewa;
 	}
 
@@ -330,9 +338,9 @@ describe('Grey-box Testing - Layer Services & Orchestration', () => {
 	});
 
 	// =========================================================================
-	// 1. AUTH SERVICE TESTING
+	// 1. AUTH SERVICE & HMAC SESSION COOKIE TESTING
 	// =========================================================================
-	describe('AuthService Integration', () => {
+	describe('AuthService & HMAC Security Integration', () => {
 		it('Registrasi penyewa baru berhasil dengan status default PENDING', async () => {
 			expect.assertions(3);
 			const user = await authService.registerPenyewa({
@@ -415,10 +423,53 @@ describe('Grey-box Testing - Layer Services & Orchestration', () => {
 			const rejected = await authService.verifikasiPenyewa(user.id, 'REJECTED');
 			expect(rejected.statusVerifikasi).toBe('REJECTED');
 		});
+
+		it('HMAC Session: Menolak cookie yang dimodifikasi (tampered payload/signature)', () => {
+			expect.assertions(4);
+			const store: Record<string, string> = {};
+			const mockCookies = {
+				set: (name: string, val: string) => {
+					store[name] = val;
+				},
+				get: (name: string) => store[name],
+				delete: (name: string) => {
+					delete store[name];
+				}
+			} as unknown as Cookies;
+
+			const sessionUser: SessionUser = {
+				id: 1,
+				email: 'penyewa@test.com',
+				namaLengkap: 'Penyewa Asli',
+				role: 'PENYEWA',
+				statusVerifikasi: 'APPROVED'
+			};
+
+			createSession(mockCookies, sessionUser);
+			const validSession = getSession(mockCookies);
+			expect(validSession?.email).toBe('penyewa@test.com');
+			expect(validSession?.role).toBe('PENYEWA');
+
+			// Tamper payload base64 (mengubah role menjadi ADMIN)
+			const originalCookie = store[SESSION_COOKIE_NAME];
+			const [payload, hmac] = originalCookie.split('.');
+			const tamperedPayload = Buffer.from(
+				JSON.stringify({ ...sessionUser, role: 'ADMIN' })
+			).toString('base64');
+			store[SESSION_COOKIE_NAME] = `${tamperedPayload}.${hmac}`;
+
+			// getSession wajib mengembalikan null karena signature HMAC tidak cocok
+			const tamperedSession = getSession(mockCookies);
+			expect(tamperedSession).toBeNull();
+
+			// Format rusak tanpa titik pembatas
+			store[SESSION_COOKIE_NAME] = 'formatrusaktanpatitik';
+			expect(getSession(mockCookies)).toBeNull();
+		});
 	});
 
 	// =========================================================================
-	// 2. SEWA SERVICE TESTING (ALUR SEWA BARU, ANTI-BENTROK, STATUS GARASI)
+	// 2. SEWA SERVICE TESTING (ALUR SEWA BARU, ANTI-BENTROK, STATUS GARASI, IDOR)
 	// =========================================================================
 	describe('SewaService - Alur Sewa Baru & Anti-Bentrok', () => {
 		it('Menolak transaksi sewa baru jika penyewa berstatus PENDING atau REJECTED', async () => {
@@ -564,6 +615,96 @@ describe('Grey-box Testing - Layer Services & Orchestration', () => {
 			});
 			expect(sewa2.id).toBeDefined();
 		});
+
+		it('Kendaraan TIDAK tersimpan ke repository jika transaksi sewa gagal akibat bentrok jadwal', async () => {
+			expect.assertions(3);
+			const user = await authService.registerPenyewa({
+				nik: '3201012345670001',
+				namaLengkap: 'Budi Santoso',
+				noTelepon: '081234567890',
+				email: 'budi@test.com',
+				password: 'password123'
+			});
+			await authService.verifikasiPenyewa(user.id, 'APPROVED');
+
+			// Sewa pertama: 21 Nov s.d. 26 Nov (+5 hari)
+			await sewaService.buatSewaBaru({
+				penyewaId: user.id,
+				garasiId: 'C001',
+				tipeKendaraan: 'MOBIL',
+				nomorPlat: 'DK 1111 AA',
+				merekTipe: 'Avanza',
+				tipeSewa: 'HARIAN',
+				jumlahHari: 5,
+				tanggalMulai: todayFixed,
+				buktiBayarPath: '/uploads/b1.png',
+				referenceDateToday: todayFixed
+			});
+			expect(kendaraanRepo.kendaraans.length).toBe(1);
+
+			// Transaksi sewa kedua mencoba booking tanggal yang bentrok (23 Nov s.d. 27 Nov) dengan data kendaraan baru
+			await expect(
+				sewaService.buatSewaBaru({
+					penyewaId: user.id,
+					garasiId: 'C001',
+					tipeKendaraan: 'MOBIL',
+					nomorPlat: 'DK 9999 ZZ',
+					merekTipe: 'Xpander Baru',
+					tipeSewa: 'HARIAN',
+					jumlahHari: 4,
+					tanggalMulai: createUtcDate(2026, 11, 23),
+					buktiBayarPath: '/uploads/b2.png',
+					referenceDateToday: todayFixed
+				})
+			).rejects.toThrow(/bentrok/i);
+
+			// Pastikan kendaraan baru TIDAK pernah disimpan ke basis data (mencegah data sampah)
+			expect(kendaraanRepo.kendaraans.length).toBe(1);
+		});
+
+		it('Proteksi IDOR: Menolak sewa jika kendaraanId yang diinput milik penyewa lain', async () => {
+			expect.assertions(1);
+			const user1 = await authService.registerPenyewa({
+				nik: '3201012345670001',
+				namaLengkap: 'Budi 1',
+				noTelepon: '081234567891',
+				email: 'budi1@test.com',
+				password: 'password123'
+			});
+			const user2 = await authService.registerPenyewa({
+				nik: '3201012345670002',
+				namaLengkap: 'Budi 2',
+				noTelepon: '081234567892',
+				email: 'budi2@test.com',
+				password: 'password123'
+			});
+			await authService.verifikasiPenyewa(user1.id, 'APPROVED');
+			await authService.verifikasiPenyewa(user2.id, 'APPROVED');
+
+			// User 1 mendaftarkan kendaraan miliknya
+			const kendaraanUser1 = await kendaraanRepo.create({
+				penyewaId: user1.id,
+				tipeKendaraan: 'MOBIL',
+				nomorPlat: 'DK 1111 AA',
+				merekTipe: 'Honda Civic'
+			});
+
+			// User 2 mencoba menyewa dengan menyusupkan ID kendaraan milik User 1
+			await expect(
+				sewaService.buatSewaBaru({
+					penyewaId: user2.id,
+					garasiId: 'C001',
+					kendaraanId: kendaraanUser1.id,
+					tipeKendaraan: 'MOBIL',
+					merekTipe: 'Honda Civic',
+					tipeSewa: 'HARIAN',
+					jumlahHari: 2,
+					tanggalMulai: todayFixed,
+					buktiBayarPath: '/uploads/b.png',
+					referenceDateToday: todayFixed
+				})
+			).rejects.toThrow(/bukan milik penyewa terkait/i);
+		});
 	});
 
 	// =========================================================================
@@ -571,7 +712,7 @@ describe('Grey-box Testing - Layer Services & Orchestration', () => {
 	// =========================================================================
 	describe('SewaService - Perpanjangan Masa Sewa oleh Admin', () => {
 		it('Admin berhasil memperpanjang sewa aktif dan mencatat riwayat perpanjangan', async () => {
-			expect.assertions(5);
+			expect.assertions(6);
 			const user = await authService.registerPenyewa({
 				nik: '3201012345670001',
 				namaLengkap: 'Budi Santoso',
@@ -607,6 +748,7 @@ describe('Grey-box Testing - Layer Services & Orchestration', () => {
 			expect(hasil.perpanjangan.biayaTambahan).toBe(80000);
 			// Total biaya sewa menjadi 60.000 + 80.000 = 140.000
 			expect(hasil.sewa.totalBiaya).toBe(140000);
+			expect(hasil.sewa.jumlahHari).toBe(7); // 3 + 4 hari terakumulasi
 			expect(hasil.sewa.tanggalSelesai.toISOString()).toBe(tglBaru.toISOString());
 			expect(sewaRepo.perpanjangans.length).toBe(1);
 		});
@@ -670,9 +812,9 @@ describe('Grey-box Testing - Layer Services & Orchestration', () => {
 	});
 
 	// =========================================================================
-	// 4. LAPORAN SERVICE TESTING
+	// 4. LAPORAN SERVICE & OPTIMASI N+1 GARASI SERVICE
 	// =========================================================================
-	describe('LaporanService Integration', () => {
+	describe('LaporanService & GarasiService Integration', () => {
 		it('Agregasi laporan menghasilkan total omzet dan total transaksi yang tepat', async () => {
 			expect.assertions(3);
 			const user = await authService.registerPenyewa({
@@ -720,6 +862,42 @@ describe('Grey-box Testing - Layer Services & Orchestration', () => {
 			// Laporan keseluruhan bulan ini
 			const laporanBulanIni = await laporanService.getLaporan({});
 			expect(laporanBulanIni.totalPendapatan).toBe(15000 + 40000);
+		});
+
+		it('GarasiService.getGarasiTersedia mengembalikan unit yang bebas bentrok tanpa query N+1', async () => {
+			expect.assertions(2);
+			const user = await authService.registerPenyewa({
+				nik: '3201012345670001',
+				namaLengkap: 'Budi Santoso',
+				noTelepon: '081234567890',
+				email: 'budi@test.com',
+				password: 'password123'
+			});
+			await authService.verifikasiPenyewa(user.id, 'APPROVED');
+
+			// Sewa C001 dari 21 Nov s.d. 25 Nov
+			await sewaService.buatSewaBaru({
+				penyewaId: user.id,
+				garasiId: 'C001',
+				tipeKendaraan: 'MOBIL',
+				nomorPlat: 'DK 1234 AB',
+				merekTipe: 'Avanza',
+				tipeSewa: 'HARIAN',
+				jumlahHari: 4,
+				tanggalMulai: todayFixed,
+				buktiBayarPath: '/uploads/b.png',
+				referenceDateToday: todayFixed
+			});
+
+			// Cek ketersediaan mobil untuk rentang yang bertabrakan dengan C001 (hanya C002 yang tersedia)
+			const garasiTersedia = await garasiService.getGarasiTersedia(
+				'MOBIL',
+				createUtcDate(2026, 11, 22),
+				createUtcDate(2026, 11, 24)
+			);
+
+			expect(garasiTersedia.some((g) => g.id === 'C001')).toBe(false);
+			expect(garasiTersedia.some((g) => g.id === 'C002')).toBe(true);
 		});
 	});
 });

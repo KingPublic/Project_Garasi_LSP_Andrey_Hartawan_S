@@ -5,6 +5,7 @@
  * durasi dinamis bulan kabisat, serta algoritma pemecahan blok bulan pada perpanjangan sewa.
  */
 
+import { BaseModel } from './BaseModel';
 import {
 	addDays,
 	diffDays,
@@ -49,8 +50,9 @@ export interface BuatSewaParams {
  * Representasi domain Transaksi Sewa Garasi.
  *
  * @class SewaModel
+ * @extends {BaseModel<SewaDTO>}
  */
-export class SewaModel {
+export class SewaModel extends BaseModel<SewaDTO> {
 	public readonly id?: number;
 	public readonly penyewaId: number;
 	public readonly garasiId: string;
@@ -74,6 +76,7 @@ export class SewaModel {
 	 * @param {SewaDTO} data - Objek data transfer sewa.
 	 */
 	constructor(data: SewaDTO) {
+		super();
 		SewaModel.validateTipeSewa(data.tipeSewa);
 
 		this.id = data.id;

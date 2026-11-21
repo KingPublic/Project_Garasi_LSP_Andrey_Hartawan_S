@@ -1,14 +1,14 @@
 /**
  * @file SewaService.ts
- * @description Service orkestrasi transaksi sewa garasi baru, validasi anti-bentrok,
- * perhitungan total biaya murni, dan perpanjangan masa sewa oleh Admin.
+ * @description Service orkestrasi transaksi sewa garasi baru, pencegahan IDOR kendaraan,
+ * validasi anti-bentrok, perhitungan biaya murni, dan perpanjangan masa sewa oleh Admin.
  */
 
-import type { PerpanjanganSewa, Sewa } from '../generated/prisma/client';
+import type { Garasi, Kendaraan, PerpanjanganSewa, Sewa } from '../generated/prisma/client';
 import { KendaraanModel } from '../models/KendaraanModel';
 import { SewaModel } from '../models/SewaModel';
 import { UserModel } from '../models/UserModel';
-import type { TipeGarasi, TipeKendaraan, TipeSewa } from '../models/types';
+import type { Role, StatusVerifikasi, TipeGarasi, TipeKendaraan, TipeSewa } from '../models/types';
 import { normalizeToUtcDate } from '../utils/date';
 import type {
 	IGarasiRepository,
@@ -80,15 +80,13 @@ export class SewaService {
 	 * Memproses transaksi Sewa Baru:
 	 * 1. Validasi penyewa terdaftar dan berstatus 'APPROVED' (hanya APPROVED yang boleh menyewa).
 	 * 2. Validasi unit garasi ada.
-	 * 3. Validasi/simpan data kendaraan penyewa.
-	 * 4. Validasi kesesuaian tipe kendaraan dengan garasi.
-	 * 5. Pengecekan anti-bentrok jadwal dengan sewa aktif lain pada garasi.
-	 * 6. Perhitungan biaya sewa murni + cas listrik (tanpa pajak/biaya siluman).
-	 * 7. Simpan transaksi ke database & ubah status garasi menjadi 'USED' jika tanggalMulai hari ini.
+	 * 3. Validasi kepemilikan kendaraan (pencegahan celah IDOR jika kendaraanId diberikan).
+	 * 4. Pra-validasi model sewa dan anti-bentrok SEBELUM membuat entitas baru di basis data (mencegah data sampah).
+	 * 5. Simpan transaksi ke database & ubah status garasi menjadi 'USED' jika tanggalMulai mencakup hari ini.
 	 *
 	 * @param {BuatSewaServiceParams} params - Parameter transaksi sewa.
 	 * @returns {Promise<Sewa>} Transaksi sewa yang tersimpan.
-	 * @throws {Error} Jika validasi status penyewa, kecocokan garasi, atau bentrok tanggal gagal.
+	 * @throws {Error} Jika validasi status penyewa, kepemilikan kendaraan, kecocokan garasi, atau bentrok tanggal gagal.
 	 */
 	public async buatSewaBaru(params: BuatSewaServiceParams): Promise<Sewa> {
 		// 1. Validasi status verifikasi penyewa
@@ -103,8 +101,8 @@ export class SewaService {
 			namaLengkap: penyewa.namaLengkap,
 			noTelepon: penyewa.noTelepon,
 			email: penyewa.email,
-			role: penyewa.role as any,
-			statusVerifikasi: penyewa.statusVerifikasi as any
+			role: penyewa.role as Role,
+			statusVerifikasi: penyewa.statusVerifikasi as StatusVerifikasi
 		});
 		userModel.validasiBisaMenyewa();
 
@@ -114,55 +112,72 @@ export class SewaService {
 			throw new Error(`Unit garasi '${params.garasiId}' tidak ditemukan.`);
 		}
 
-		// 3. Validasi & simpan kendaraan
-		let kendaraanId = params.kendaraanId;
-		let kapasitasBaterai = params.kapasitasBateraiKwh ?? null;
+		// 3. Penanganan Data Kendaraan & Pencegahan IDOR
+		let kendaraanId: number;
+		let tipeKendaraanFinal: TipeKendaraan;
+		let nomorPlatFinal: string | null;
+		let merekTipeFinal: string;
+		let kapasitasBateraiFinal: number | null;
+		let kendaraanBaruModel: KendaraanModel | null = null;
 
-		if (kendaraanId) {
-			const existingKendaraan = await this.kendaraanRepo.findById(kendaraanId);
+		if (params.kendaraanId) {
+			const existingKendaraan = await this.kendaraanRepo.findById(params.kendaraanId);
 			if (!existingKendaraan) {
-				throw new Error(`Kendaraan dengan ID ${kendaraanId} tidak ditemukan.`);
+				throw new Error(`Kendaraan dengan ID ${params.kendaraanId} tidak ditemukan.`);
 			}
-			kapasitasBaterai = existingKendaraan.kapasitasBateraiKwh;
+
+			// Proteksi IDOR: Pastikan kendaraan benar-benar milik penyewa yang sedang menyewa
+			if (existingKendaraan.penyewaId !== params.penyewaId) {
+				throw new Error(`Kendaraan dengan ID ${params.kendaraanId} bukan milik penyewa terkait.`);
+			}
+
+			kendaraanId = existingKendaraan.id;
+			tipeKendaraanFinal = existingKendaraan.tipeKendaraan as TipeKendaraan;
+			nomorPlatFinal = existingKendaraan.nomorPlat;
+			merekTipeFinal = existingKendaraan.merekTipe;
+			kapasitasBateraiFinal = existingKendaraan.kapasitasBateraiKwh;
 		} else {
-			// Buat kendaraan baru
-			const kendaraanModel = new KendaraanModel({
+			// Pra-validasi KendaraanModel baru di memori terlebih dahulu tanpa menyimpan ke DB
+			kendaraanBaruModel = new KendaraanModel({
 				penyewaId: params.penyewaId,
 				tipeKendaraan: params.tipeKendaraan,
 				nomorPlat: params.nomorPlat ?? null,
 				merekTipe: params.merekTipe,
 				kapasitasBateraiKwh: params.kapasitasBateraiKwh ?? null
 			});
-			const savedKendaraan = await this.kendaraanRepo.create(kendaraanModel.toDTO());
-			kendaraanId = savedKendaraan.id;
-			kapasitasBaterai = savedKendaraan.kapasitasBateraiKwh;
+
+			tipeKendaraanFinal = kendaraanBaruModel.tipeKendaraan;
+			nomorPlatFinal = kendaraanBaruModel.nomorPlat;
+			merekTipeFinal = kendaraanBaruModel.merekTipe;
+			kapasitasBateraiFinal = kendaraanBaruModel.kapasitasBateraiKwh;
+			kendaraanId = 0; // Placeholder sementara sebelum validasi sewa lulus
 		}
 
 		// 4. Validasi kesesuaian tipe kendaraan dengan tipe garasi
 		const validatorKendaraan = new KendaraanModel({
 			penyewaId: params.penyewaId,
-			tipeKendaraan: params.tipeKendaraan,
-			nomorPlat: params.nomorPlat ?? null,
-			merekTipe: params.merekTipe,
-			kapasitasBateraiKwh: kapasitasBaterai
+			tipeKendaraan: tipeKendaraanFinal,
+			nomorPlat: nomorPlatFinal,
+			merekTipe: merekTipeFinal,
+			kapasitasBateraiKwh: kapasitasBateraiFinal
 		});
 		validatorKendaraan.validasiKesesuaianGarasi(garasi.tipeGarasi as TipeGarasi);
 
-		// 5. Ambil jadwal aktif untuk pengecekan anti-bentrok
+		// 5. Ambil jadwal aktif pada garasi untuk pengecekan anti-bentrok
 		const jadwalAktif = await this.sewaRepo.findActiveSewaByGarasiId(garasi.id);
 
-		// 6. Instansiasi SewaModel (melakukan perhitungan biaya murni & anti-overlap)
+		// 6. Instansiasi dan validasi SewaModel secara ketat sebelum mutasi basis data
 		const sewaModel = SewaModel.buatSewaBaru({
 			penyewaId: params.penyewaId,
 			garasiId: garasi.id,
-			kendaraanId: kendaraanId!,
+			kendaraanId,
 			tipeSewa: params.tipeSewa,
 			tanggalMulai: params.tanggalMulai,
 			jumlahHari: params.jumlahHari,
 			hargaHarian: garasi.hargaHarian,
 			tipeGarasi: garasi.tipeGarasi as TipeGarasi,
-			tipeKendaraan: params.tipeKendaraan,
-			kapasitasBateraiKwh: kapasitasBaterai,
+			tipeKendaraan: tipeKendaraanFinal,
+			kapasitasBateraiKwh: kapasitasBateraiFinal,
 			sisaBateraiKwh: params.sisaBateraiKwh,
 			hargaListrikPerKwh: garasi.hargaListrikPerKwh,
 			buktiBayarPath: params.buktiBayarPath,
@@ -173,10 +188,18 @@ export class SewaService {
 			}))
 		});
 
-		// 7. Simpan transaksi sewa ke database
-		const savedSewa = await this.sewaRepo.create(sewaModel.toDTO());
+		// 7. Jika menggunakan kendaraan baru dan seluruh validasi sewa telah lulus, baru simpan kendaraan
+		if (kendaraanBaruModel) {
+			const savedKendaraan = await this.kendaraanRepo.create(kendaraanBaruModel.toDTO());
+			kendaraanId = savedKendaraan.id;
+		}
 
-		// 8. Update status garasi menjadi USED jika tanggal sewa mencakup hari ini
+		// 8. Simpan transaksi sewa ke basis data dengan ID kendaraan definitif
+		const sewaDTO = sewaModel.toDTO();
+		sewaDTO.kendaraanId = kendaraanId;
+		const savedSewa = await this.sewaRepo.create(sewaDTO);
+
+		// 9. Update status garasi menjadi USED jika tanggal sewa mencakup hari ini
 		const todayUtc = normalizeToUtcDate(params.referenceDateToday ?? new Date());
 		if (
 			sewaModel.tanggalMulai.getTime() <= todayUtc.getTime() &&
@@ -194,7 +217,7 @@ export class SewaService {
 	 * 2. Validasi anti-bentrok terhadap jadwal booking sewa lain pada garasi yang sama.
 	 * 3. Perhitungan biaya tambahan positif dengan pemecahan blok bulan dinamis (25x) + sisa hari.
 	 * 4. Simpan riwayat ke tabel PerpanjanganSewa.
-	 * 5. Perbarui tanggal selesai dan akumulasi total biaya pada tabel Sewa.
+	 * 5. Perbarui tanggal selesai, akumulasi total biaya, dan total jumlah hari pada tabel Sewa.
 	 *
 	 * @param {PerpanjangSewaServiceParams} params - Parameter perpanjangan sewa.
 	 * @returns {Promise<{ sewa: Sewa; perpanjangan: PerpanjanganSewa }>} Hasil sewa yang diperpanjang dan riwayatnya.
@@ -248,11 +271,12 @@ export class SewaService {
 			buktiBayarPath: params.buktiBayarPath.trim()
 		});
 
-		// Update tanggal selesai dan akumulasi total biaya pada tabel sewa
+		// Update tanggal selesai, akumulasi total biaya, dan akumulasi jumlah hari pada tabel sewa
 		const updatedSewa = await this.sewaRepo.updateTanggalSelesaiDanBiaya(
 			sewa.id,
 			hasilPerpanjangan.tanggalSelesaiBaru,
-			hasilPerpanjangan.biayaTambahan
+			hasilPerpanjangan.biayaTambahan,
+			hasilPerpanjangan.tambahanHari
 		);
 
 		return {
@@ -265,11 +289,11 @@ export class SewaService {
 	 * Mengambil seluruh riwayat sewa milik seorang penyewa tertentu.
 	 *
 	 * @param {number} penyewaId - ID penyewa.
-	 * @returns {Promise<Array<Sewa & { garasi: any; kendaraan: any }>>} Daftar riwayat sewa penyewa.
+	 * @returns {Promise<Array<Sewa & { garasi: Garasi; kendaraan: Kendaraan }>>} Daftar riwayat sewa penyewa.
 	 */
 	public async getRiwayatSewaPenyewa(
 		penyewaId: number
-	): Promise<Array<Sewa & { garasi: any; kendaraan: any }>> {
+	): Promise<Array<Sewa & { garasi: Garasi; kendaraan: Kendaraan }>> {
 		return this.sewaRepo.findByPenyewaId(penyewaId);
 	}
 

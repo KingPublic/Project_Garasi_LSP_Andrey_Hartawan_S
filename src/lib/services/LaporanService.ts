@@ -4,6 +4,7 @@
  */
 
 import type { IGarasiRepository, ISewaRepository, IUserRepository, LaporanData, LaporanFilterInput } from '../repositories/interfaces';
+import { getTodayUtcDate } from '../utils/date';
 import { garasiRepository } from '../repositories/GarasiRepository';
 import { sewaRepository } from '../repositories/SewaRepository';
 import { userRepository } from '../repositories/UserRepository';
@@ -75,10 +76,10 @@ export class LaporanService {
 		const totalCalonPenyewaPending = userList.filter((u) => u.statusVerifikasi === 'PENDING').length;
 		const totalPenyewaApproved = userList.filter((u) => u.statusVerifikasi === 'APPROVED').length;
 
-		const now = new Date();
+		const today = getTodayUtcDate();
 		const laporanBulanIni = await this.sewaRepo.getLaporan({
-			bulan: now.getUTCMonth() + 1,
-			tahun: now.getUTCFullYear()
+			bulan: today.getUTCMonth() + 1,
+			tahun: today.getUTCFullYear()
 		});
 
 		return {

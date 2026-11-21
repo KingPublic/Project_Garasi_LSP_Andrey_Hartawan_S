@@ -4,14 +4,16 @@
  * Menangani validasi nomor plat, spesifikasi baterai mobil listrik, serta matriks kesesuaian garasi.
  */
 
+import { BaseModel } from './BaseModel';
 import type { KendaraanDTO, TipeGarasi, TipeKendaraan } from './types';
 
 /**
  * Representasi domain Kendaraan penyewa.
  *
  * @class KendaraanModel
+ * @extends {BaseModel<KendaraanDTO>}
  */
-export class KendaraanModel {
+export class KendaraanModel extends BaseModel<KendaraanDTO> {
 	public readonly id?: number;
 	public readonly penyewaId: number;
 	public readonly tipeKendaraan: TipeKendaraan;
@@ -28,6 +30,7 @@ export class KendaraanModel {
 	 * @throws {Error} Jika validasi tipe kendaraan, plat nomor, merek/tipe, atau kapasitas baterai gagal.
 	 */
 	constructor(data: KendaraanDTO) {
+		super();
 		KendaraanModel.validateTipeKendaraan(data.tipeKendaraan);
 		KendaraanModel.validatePenyewaId(data.penyewaId);
 		KendaraanModel.validateMerekTipe(data.merekTipe);

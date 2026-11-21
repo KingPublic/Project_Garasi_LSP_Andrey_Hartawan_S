@@ -59,7 +59,7 @@ export function createUtcDate(year: number, month: number, day: number): Date {
  */
 export function getTodayUtcDate(): Date {
 	const now = new Date();
-	return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+	return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0));
 }
 
 /**

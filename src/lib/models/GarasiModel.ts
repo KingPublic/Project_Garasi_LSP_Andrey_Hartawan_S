@@ -5,14 +5,16 @@
  * perhitungan tarif sewa bulanan dan listrik, serta validasi kompatibilitas kendaraan.
  */
 
+import { BaseModel } from './BaseModel';
 import type { GarasiDTO, StatusGarasi, TipeGarasi, TipeKendaraan } from './types';
 
 /**
  * Representasi domain unit Garasi.
  *
  * @class GarasiModel
+ * @extends {BaseModel<GarasiDTO>}
  */
-export class GarasiModel {
+export class GarasiModel extends BaseModel<GarasiDTO> {
 	public static readonly MAX_KAPASITAS_PER_TIPE = 999;
 
 	public static readonly PREFIX_MAP: Record<TipeGarasi, string> = {
@@ -37,6 +39,7 @@ export class GarasiModel {
 	 * @throws {Error} Jika nomor urut, id, harga harian, atau harga listrik tidak valid.
 	 */
 	constructor(data: GarasiDTO) {
+		super();
 		GarasiModel.validateTipeGarasi(data.tipeGarasi);
 		GarasiModel.validateNomorUrut(data.nomorUrut);
 		GarasiModel.validateHargaHarian(data.hargaHarian);
