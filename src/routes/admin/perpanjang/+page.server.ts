@@ -2,7 +2,6 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { requireAuth } from '$lib/server/auth';
 import { sewaService } from '$lib/services/SewaService';
-import { sewaRepository } from '$lib/repositories/SewaRepository';
 import { saveUploadFile } from '$lib/server/upload';
 import { formatDateIso, getTodayUtcDate } from '$lib/utils/date';
 
@@ -10,7 +9,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	requireAuth(cookies, ['ADMIN']);
 
 	const today = getTodayUtcDate();
-	const sewaAktifList = await sewaRepository.findSewaAktifHariIni(today);
+	const sewaAktifList = await sewaService.getSewaAktifHariIni(today);
 
 	return {
 		sewaAktifList,

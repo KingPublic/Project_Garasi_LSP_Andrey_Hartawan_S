@@ -61,8 +61,8 @@ export const actions: Actions = {
 			return fail(400, { error: 'Tarif sewa harian harus berupa angka positif lebih dari 0.' });
 		}
 
-		if (tipeGarasi === 'MOBIL_LISTRIK' && (hargaListrikPerKwh === null || isNaN(hargaListrikPerKwh) || hargaListrikPerKwh < 0)) {
-			return fail(400, { error: 'Tarif listrik per kWh wajib diisi (minimal 0) untuk Garasi Mobil Listrik (EV).' });
+		if (tipeGarasi === 'MOBIL_LISTRIK' && (hargaListrikPerKwh === null || isNaN(hargaListrikPerKwh) || hargaListrikPerKwh <= 0)) {
+			return fail(400, { error: 'Tarif listrik per kWh wajib diisi (> 0) untuk Garasi Mobil Listrik (EV).' });
 		}
 
 		try {

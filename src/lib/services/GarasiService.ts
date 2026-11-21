@@ -8,7 +8,7 @@ import type { Garasi, Sewa } from '../generated/prisma/client';
 import { GarasiModel } from '../models/GarasiModel';
 import { SewaModel } from '../models/SewaModel';
 import type { StatusGarasi, TipeGarasi, TipeKendaraan } from '../models/types';
-import { normalizeToUtcDate } from '../utils/date';
+import { getTodayUtcDate, normalizeToUtcDate } from '../utils/date';
 import type { IGarasiRepository, ISewaRepository } from '../repositories/interfaces';
 import { garasiRepository } from '../repositories/GarasiRepository';
 import { sewaRepository } from '../repositories/SewaRepository';
@@ -147,10 +147,10 @@ export class GarasiService {
 	 * Melakukan sinkronisasi status kolom `Garasi.status` ('AVAILABLE' vs 'USED')
 	 * secara real-time berdasarkan transaksi sewa aktif pada hari ini.
 	 *
-	 * @param {Date} [today=new Date()] - Tanggal acuan sinkronisasi.
+	 * @param {Date} [today=getTodayUtcDate()] - Tanggal acuan sinkronisasi.
 	 * @returns {Promise<void>}
 	 */
-	public async sinkronisasiStatusGarasiHariIni(today: Date = new Date()): Promise<void> {
+	public async sinkronisasiStatusGarasiHariIni(today: Date = getTodayUtcDate()): Promise<void> {
 		const semuaGarasi = await this.garasiRepo.findAll();
 		const sewaAktifHariIni = await this.sewaRepo.findSewaAktifHariIni(today);
 		const garasiIdUsedSet = new Set(sewaAktifHariIni.map((s) => s.garasiId));

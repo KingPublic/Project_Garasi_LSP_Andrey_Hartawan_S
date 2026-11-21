@@ -21,6 +21,10 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 	const penyewaIdRaw = url.searchParams.get('penyewaId');
 	const penyewaId = penyewaIdRaw ? parseInt(penyewaIdRaw, 10) : undefined;
 
+	// Ambil daftar penyewa terlebih dahulu untuk sinkronisasi filter awal mode penyewa
+	const calonPenyewaList = await authService.getDaftarCalonPenyewa();
+	const effectivePenyewaId = penyewaId ?? (calonPenyewaList.length > 0 ? calonPenyewaList[0].id : undefined);
+
 	// Susun filter query
 	const filterInput: LaporanFilterInput = {};
 
@@ -31,13 +35,12 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 		filterInput.tanggal = tanggal;
 	} else if (mode === 'tipe') {
 		filterInput.tipeGarasi = tipeGarasi;
-	} else if (mode === 'penyewa' && penyewaId) {
-		filterInput.penyewaId = penyewaId;
+	} else if (mode === 'penyewa' && effectivePenyewaId) {
+		filterInput.penyewaId = effectivePenyewaId;
 	}
 
 	const ringkasanDashboard = await laporanService.getRingkasanDashboard();
 	const laporan = await laporanService.getLaporan(filterInput);
-	const calonPenyewaList = await authService.getDaftarCalonPenyewa();
 
 	return {
 		ringkasanDashboard,
@@ -49,7 +52,7 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 			bulan,
 			tanggal,
 			tipeGarasi,
-			penyewaId: penyewaId ?? (calonPenyewaList.length > 0 ? calonPenyewaList[0].id : 0)
+			penyewaId: effectivePenyewaId ?? 0
 		},
 		todayIso
 	};

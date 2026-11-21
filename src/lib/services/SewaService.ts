@@ -9,7 +9,7 @@ import { KendaraanModel } from '../models/KendaraanModel';
 import { SewaModel } from '../models/SewaModel';
 import { UserModel } from '../models/UserModel';
 import type { Role, StatusVerifikasi, TipeGarasi, TipeKendaraan, TipeSewa } from '../models/types';
-import { normalizeToUtcDate } from '../utils/date';
+import { getTodayUtcDate, normalizeToUtcDate } from '../utils/date';
 import type {
 	IGarasiRepository,
 	IKendaraanRepository,
@@ -200,7 +200,9 @@ export class SewaService {
 		const savedSewa = await this.sewaRepo.create(sewaDTO);
 
 		// 9. Update status garasi menjadi USED jika tanggal sewa mencakup hari ini
-		const todayUtc = normalizeToUtcDate(params.referenceDateToday ?? new Date());
+		const todayUtc = params.referenceDateToday
+			? normalizeToUtcDate(params.referenceDateToday)
+			: getTodayUtcDate();
 		if (
 			sewaModel.tanggalMulai.getTime() <= todayUtc.getTime() &&
 			sewaModel.tanggalSelesai.getTime() > todayUtc.getTime()
@@ -300,10 +302,10 @@ export class SewaService {
 	/**
 	 * Mengambil daftar seluruh unit sewa yang sedang aktif pada hari ini untuk ditampilkan di halaman Admin.
 	 *
-	 * @param {Date} [today=new Date()] - Tanggal hari ini.
+	 * @param {Date} [today=getTodayUtcDate()] - Tanggal hari ini.
 	 * @returns {Promise<SewaDetail[]>} Daftar sewa aktif hari ini.
 	 */
-	public async getSewaAktifHariIni(today: Date = new Date()): Promise<SewaDetail[]> {
+	public async getSewaAktifHariIni(today: Date = getTodayUtcDate()): Promise<SewaDetail[]> {
 		return this.sewaRepo.findSewaAktifHariIni(today);
 	}
 }
