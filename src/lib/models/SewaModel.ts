@@ -1,10 +1,4 @@
-/**
- * @file SewaModel.ts
- * @description Model domain OOP untuk transaksi penyewaan garasi dan perpanjangan masa sewa.
- * Mengimplementasikan rumus murni tanpa biaya siluman, algoritma anti-bentrok jadwal (anti-overlap),
- * durasi dinamis bulan kabisat, serta algoritma pemecahan blok bulan pada perpanjangan sewa.
- */
-
+import { BaseModel } from './BaseModel';
 import {
 	addDays,
 	diffDays,
@@ -43,14 +37,17 @@ export interface BuatSewaParams {
 	statusSewa?: StatusSewa;
 	referenceDateToday?: Date | string;
 	daftarJadwalAktif?: JadwalRentang[];
+	daftarJadwalKendaraanAktif?: JadwalRentang[];
 }
 
 /**
- * Representasi domain Transaksi Sewa Garasi.
+ * Menyimpan data dan aturan transaksi sewa garasi dan perpanjangan durasi.
+ * Menghitung total biaya (biaya sewa + listrik) dan mengecek bentrok jadwal.
  *
- * @class SewaModel
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
-export class SewaModel {
+export class SewaModel extends BaseModel<SewaDTO> {
 	public readonly id?: number;
 	public readonly penyewaId: number;
 	public readonly garasiId: string;
@@ -68,12 +65,12 @@ export class SewaModel {
 	public readonly createdAt?: Date;
 
 	/**
-	 * Konstruktor SewaModel. Menginisialisasi instance dengan data sewa yang telah divalidasi.
+	 * Konstruktor SewaModel dengan data sewa yang telah divalidasi.
 	 *
-	 * @constructor
-	 * @param {SewaDTO} data - Objek data transfer sewa.
+	 * @param data - Objek data transfer sewa.
 	 */
 	constructor(data: SewaDTO) {
+		super();
 		SewaModel.validateTipeSewa(data.tipeSewa);
 
 		this.id = data.id;
@@ -97,10 +94,7 @@ export class SewaModel {
 	 * Factory method untuk membuat dan memvalidasi transaksi Sewa Baru dari parameter pengguna.
 	 * Menghitung otomatis tanggal selesai, biaya sewa, biaya listrik, dan total biaya.
 	 *
-	 * @static
-	 * @param {BuatSewaParams} params - Parameter transaksi sewa baru.
-	 * @returns {SewaModel} Instance SewaModel yang valid.
-	 * @throws {Error} Jika validasi tanggal, durasi, anti-bentrok, baterai, atau bukti bayar gagal.
+	 * @param params - Parameter transaksi sewa baru.
 	 */
 	public static buatSewaBaru(params: BuatSewaParams): SewaModel {
 		SewaModel.validateTipeSewa(params.tipeSewa);
@@ -135,9 +129,20 @@ export class SewaModel {
 			tanggalSelesaiUtc = addDays(tanggalMulaiUtc, durasiHari);
 		}
 
-		// Validasi Anti-Bentrok Jadwal jika ada daftar jadwal aktif lain
+		// Validasi Anti-Bentrok Jadwal jika ada daftar jadwal aktif lain pada garasi ini
 		if (params.daftarJadwalAktif && params.daftarJadwalAktif.length > 0) {
 			SewaModel.validasiAntiBentrok(tanggalMulaiUtc, tanggalSelesaiUtc, params.daftarJadwalAktif);
+		}
+
+		// Validasi anti-bentrok jadwal pada kendaraan yang sama (kendaraan tidak bisa di 2 garasi bersamaan)
+		if (params.daftarJadwalKendaraanAktif && params.daftarJadwalKendaraanAktif.length > 0) {
+			for (const jk of params.daftarJadwalKendaraanAktif) {
+				if (SewaModel.cekBentrokJadwal(tanggalMulaiUtc, tanggalSelesaiUtc, jk.tanggalMulai, jk.tanggalSelesai)) {
+					throw new Error(
+						'Kendaraan ini sudah memiliki jadwal sewa aktif pada rentang tanggal tersebut (bentrok jadwal). Satu kendaraan tidak dapat menyewa lebih dari satu unit garasi di waktu yang bersamaan.'
+					);
+				}
+			}
 		}
 
 		// Validasi baterai khusus mobil listrik di garasi mobil listrik
@@ -193,9 +198,7 @@ export class SewaModel {
 	/**
 	 * Memvalidasi tipe sewa ('HARIAN' atau 'BULANAN').
 	 *
-	 * @static
-	 * @param {TipeSewa} tipeSewa - Tipe sewa.
-	 * @throws {Error} Jika tipe sewa tidak valid.
+	 * @param tipeSewa - Tipe sewa.
 	 */
 	public static validateTipeSewa(tipeSewa: TipeSewa): void {
 		if (tipeSewa !== 'HARIAN' && tipeSewa !== 'BULANAN') {
@@ -206,9 +209,8 @@ export class SewaModel {
 	/**
 	 * Mendapatkan jumlah hari dinamis dalam bulan dari tanggal yang diberikan.
 	 *
-	 * @static
-	 * @param {Date | string} tanggal - Tanggal acuan.
-	 * @returns {number} Jumlah hari (28/29/30/31).
+	 * @param tanggal - Tanggal acuan.
+	 * @returns Jumlah hari (28/29/30/31).
 	 */
 	public static getJumlahHariBulan(tanggal: Date | string): number {
 		return getDaysInMonth(tanggal);
@@ -219,12 +221,11 @@ export class SewaModel {
 	 * Rumus: mulaiA < selesaiB && selesaiA > mulaiB.
 	 * Batas yang persis bersinggungan (contoh: selesaiA === mulaiB) dinyatakan TIDAK bentrok (false).
 	 *
-	 * @static
-	 * @param {Date | string} mulaiA - Awal jadwal A.
-	 * @param {Date | string} selesaiA - Akhir jadwal A.
-	 * @param {Date | string} mulaiB - Awal jadwal B.
-	 * @param {Date | string} selesaiB - Akhir jadwal B.
-	 * @returns {boolean} True jika jadwal bentrok, false jika tidak bentrok.
+	 * @param mulaiA - Awal jadwal A.
+	 * @param selesaiA - Akhir jadwal A.
+	 * @param mulaiB - Awal jadwal B.
+	 * @param selesaiB - Akhir jadwal B.
+	 * @returns True jika jadwal bentrok, false jika tidak bentrok.
 	 */
 	public static cekBentrokJadwal(
 		mulaiA: Date | string,
@@ -237,6 +238,8 @@ export class SewaModel {
 		const mB = normalizeToUtcDate(mulaiB).getTime();
 		const sB = normalizeToUtcDate(selesaiB).getTime();
 
+		// Perbandingan tanpa sama dengan (< dan >) agar jadwal yang bersambung
+		// (misalnya selesai tanggal 10, penyewa berikutnya mulai tanggal 10) tidak dianggap bentrok
 		return mA < sB && sA > mB;
 	}
 
@@ -244,11 +247,9 @@ export class SewaModel {
 	 * Memvalidasi rentang tanggal baru terhadap sekumpulan jadwal aktif yang sudah ada.
 	 * Melemparkan Error jika terdeteksi jadwal yang bertabrakan.
 	 *
-	 * @static
-	 * @param {Date | string} mulaiBaru - Tanggal mulai baru.
-	 * @param {Date | string} selesaiBaru - Tanggal selesai baru.
-	 * @param {JadwalRentang[]} daftarJadwalAktif - Daftar jadwal sewa aktif pada unit garasi terkait.
-	 * @throws {Error} Jika rentang tanggal bertabrakan dengan jadwal yang ada.
+	 * @param mulaiBaru - Tanggal mulai baru.
+	 * @param selesaiBaru - Tanggal selesai baru.
+	 * @param daftarJadwalAktif - Daftar jadwal sewa aktif pada unit garasi terkait.
 	 */
 	public static validasiAntiBentrok(
 		mulaiBaru: Date | string,
@@ -269,11 +270,10 @@ export class SewaModel {
 	 * - HARIAN: jumlahHari * hargaHarian
 	 * - BULANAN: 25 * hargaHarian
 	 *
-	 * @static
-	 * @param {TipeSewa} tipeSewa - Tipe sewa.
-	 * @param {number} jumlahHari - Jumlah hari durasi sewa.
-	 * @param {number} hargaHarian - Tarif sewa harian unit garasi.
-	 * @returns {number} Nominal biaya sewa garasi.
+	 * @param tipeSewa - Tipe sewa.
+	 * @param jumlahHari - Jumlah hari durasi sewa.
+	 * @param hargaHarian - Tarif sewa harian unit garasi.
+	 * @returns Nominal biaya sewa garasi.
 	 */
 	public static hitungBiayaSewa(
 		tipeSewa: TipeSewa,
@@ -292,14 +292,12 @@ export class SewaModel {
 	 * Hanya berlaku jika kendaraan MOBIL_LISTRIK ditempatkan di garasi MOBIL_LISTRIK.
 	 * Untuk kombinasi lainnya menghasilkan 0.
 	 *
-	 * @static
-	 * @param {TipeKendaraan} tipeKendaraan - Tipe kendaraan penyewa.
-	 * @param {TipeGarasi} tipeGarasi - Tipe garasi yang disewa.
-	 * @param {number | null} kapasitasPenuhKwh - Kapasitas baterai penuh kendaraan (kWh).
-	 * @param {number | null} sisaBateraiKwh - Sisa baterai saat masuk garasi (kWh).
-	 * @param {number | null} hargaListrikPerKwh - Tarif listrik per kWh pada unit garasi.
-	 * @returns {number} Biaya listrik terhitung (pembulatan Math.round).
-	 * @throws {Error} Jika nilai baterai tidak logis (kapasitas <= 0, sisa < 0, sisa > kapasitas).
+	 * @param tipeKendaraan - Tipe kendaraan penyewa.
+	 * @param tipeGarasi - Tipe garasi yang disewa.
+	 * @param kapasitasPenuhKwh - Kapasitas baterai penuh kendaraan (kWh).
+	 * @param sisaBateraiKwh - Sisa baterai saat masuk garasi (kWh).
+	 * @param hargaListrikPerKwh - Tarif listrik per kWh pada unit garasi.
+	 * @returns Biaya listrik terhitung (pembulatan Math.round).
 	 */
 	public static hitungBiayaListrik(
 		tipeKendaraan: TipeKendaraan,
@@ -335,10 +333,9 @@ export class SewaModel {
 	 * Menghitung total biaya transaksi secara murni: totalBiaya = biayaSewa + biayaListrik.
 	 * Tidak ada tambahan pajak, markup, atau persentase apa pun.
 	 *
-	 * @static
-	 * @param {number} biayaSewa - Biaya sewa garasi.
-	 * @param {number} biayaListrik - Biaya pengisian listrik.
-	 * @returns {number} Total biaya transaksi.
+	 * @param biayaSewa - Biaya sewa garasi.
+	 * @param biayaListrik - Biaya pengisian listrik.
+	 * @returns Total biaya transaksi.
 	 */
 	public static hitungTotalBiaya(biayaSewa: number, biayaListrik: number): number {
 		return biayaSewa + biayaListrik;
@@ -351,13 +348,11 @@ export class SewaModel {
 	 * 3. Pemecahan durasi tambahan menjadi blok bulan dinamis (25x hargaHarian) + sisa hari (sisaHari * hargaHarian).
 	 * 4. Nilai biayaTambahan selalu positif (> 0).
 	 *
-	 * @static
-	 * @param {Date | string} tanggalSelesaiLama - Tanggal selesai transaksi saat ini.
-	 * @param {Date | string} tanggalSelesaiBaru - Tanggal selesai baru yang diajukan oleh Admin.
-	 * @param {number} hargaHarian - Tarif sewa harian unit garasi.
-	 * @param {JadwalRentang[]} [jadwalBentrokLain] - Daftar jadwal sewa aktif lain pada garasi ini.
-	 * @returns {PerpanjanganResult} Objek hasil rincian perpanjangan sewa.
-	 * @throws {Error} Jika tanggal baru <= tanggal lama atau terjadi bentrok jadwal.
+	 * @param tanggalSelesaiLama - Tanggal selesai transaksi saat ini.
+	 * @param tanggalSelesaiBaru - Tanggal selesai baru yang diajukan oleh Admin.
+	 * @param hargaHarian - Tarif sewa harian unit garasi.
+	 * @param jadwalBentrokLain - Daftar jadwal sewa aktif lain pada garasi ini.
+	 * @returns Objek hasil rincian perpanjangan sewa.
 	 */
 	public static hitungBiayaPerpanjangan(
 		tanggalSelesaiLama: Date | string,
@@ -385,6 +380,7 @@ export class SewaModel {
 		let kursor = new Date(lamaUtc.getTime());
 		let jumlahBulan = 0;
 
+		// Memecah durasi per 1 bulan kalender penuh (tarif hemat 25x harga harian), lalu sisa harinya dikali tarif harian
 		while (true) {
 			const daysInMonth = SewaModel.getJumlahHariBulan(kursor);
 			const kandidat = addDays(kursor, daysInMonth);
@@ -413,28 +409,24 @@ export class SewaModel {
 		};
 	}
 
-	/**
-	 * Mendapatkan status transaksi sewa saat ini.
-	 *
-	 * @returns {StatusSewa} 'AKTIF' atau 'SELESAI'.
-	 */
 	public get statusSewa(): StatusSewa {
 		return this._statusSewa;
 	}
 
-	/**
-	 * Menandai transaksi sewa telah selesai.
-	 *
-	 * @returns {void}
-	 */
+	public approvePembayaran(): void {
+		this._statusSewa = 'AKTIF';
+	}
+
+	public rejectPembayaran(): void {
+		this._statusSewa = 'DITOLAK';
+	}
+
 	public selesaikanSewa(): void {
 		this._statusSewa = 'SELESAI';
 	}
 
 	/**
 	 * Mengonversi model ke bentuk DTO polos.
-	 *
-	 * @returns {SewaDTO} Objek DTO.
 	 */
 	public toDTO(): SewaDTO {
 		return {

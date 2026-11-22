@@ -4,6 +4,7 @@
  */
 
 export * from './types';
+export * from './BaseModel';
 export * from './UserModel';
 export * from './GarasiModel';
 export * from './KendaraanModel';

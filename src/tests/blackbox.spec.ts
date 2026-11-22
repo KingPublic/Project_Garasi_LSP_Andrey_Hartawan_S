@@ -1,7 +1,10 @@
 /**
- * @file blackbox.spec.ts
- * @description Pengujian Unit Black-box Testing berbasis Equivalence Partitioning (EP)
- * dan Boundary Value Analysis (BVA) untuk sistem penyewaan garasi LSP Pemrogram.
+ * Pengujian unit sistem penyewaan garasi GARASI TA dengan pendekatan Black-box Testing.
+ * Menggunakan teknik Boundary Value Analysis (BVA) dan Equivalence Partitioning (EP)
+ * untuk menguji nilai batas dan kelompok input aturan bisnis.
+ *
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
 
 import { describe, expect, it } from 'vitest';
@@ -20,9 +23,13 @@ import {
 import type { TipeGarasi, TipeKendaraan } from '../lib/models/types';
 
 describe('Black-box Testing - Equivalence Partitioning & Boundary Value Analysis', () => {
+
 	// =========================================================================
-	// 1. VALIDASI NIK USER (BVA: 15, 16, 17 DIGIT & NON-NUMERIK)
+	// 1. VALIDASI NIK USER
+	// Teknik: BVA (panjang digit: 15, 16, 17) & EP (karakter numerik vs non-numerik)
+	// Aturan: Calon penyewa wajib mengisi NIK tepat 16 digit angka. Admin boleh null.
 	// =========================================================================
+
 	describe('UserModel - Validasi NIK Calon Penyewa', () => {
 		it('BVA: Menolak NIK dengan panjang 15 digit (di bawah batas minimum)', () => {
 			expect.assertions(1);
@@ -96,7 +103,9 @@ describe('Black-box Testing - Equivalence Partitioning & Boundary Value Analysis
 	});
 
 	// =========================================================================
-	// 2. BATAS KAPASITAS KUMULATIF GARASI (BVA: 999 VS 1000) & KODE 3 DIGIT
+	// 2. BATAS KAPASITAS KUMULATIF GARASI & FORMAT KODE 3 DIGIT
+	// Teknik: BVA (nomor urut: 0, 1, 999, 1000) & EP (prefix S, C, E)
+	// Aturan: Maksimal 999 unit per tipe garasi. Kode berformat 1 huruf + 3 digit.
 	// =========================================================================
 	describe('GarasiModel - Batas Kumulatif 999 Unit & Generator Kode 3 Digit', () => {
 		it('BVA: Menerima pembuatan unit tepat mencapai kumulatif 999 (998 + 1 = 999)', () => {
@@ -143,7 +152,12 @@ describe('Black-box Testing - Equivalence Partitioning & Boundary Value Analysis
 	});
 
 	// =========================================================================
-	// 3. MATRIKS KOMPATIBILITAS KENDARAAN DAN GARASI
+	// 3. MATRIKS KECOCOKAN KENDARAAN VS TIPE GARASI
+	// Teknik: Equivalence Partitioning (EP)
+	// Aturan:
+	// - Sepeda & Motor hanya boleh di garasi SEPEDA.
+	// - Mobil konvensional hanya boleh di garasi MOBIL.
+	// - Mobil listrik (EV) boleh di garasi MOBIL atau MOBIL_LISTRIK.
 	// =========================================================================
 	describe('KendaraanModel & GarasiModel - Matriks Kompatibilitas', () => {
 		const garasiSepeda = new GarasiModel({
@@ -232,7 +246,9 @@ describe('Black-box Testing - Equivalence Partitioning & Boundary Value Analysis
 	});
 
 	// =========================================================================
-	// 4. VALIDASI PLAT NOMOR & SPESIFIKASI BATERAI
+	// 4. VALIDASI PLAT NOMOR & BATAS BATERAI MOBIL LISTRIK
+	// Teknik: EP (sepeda tanpa plat vs kendaraan bermotor wajib plat) & BVA (kapasitas baterai)
+	// Aturan: Mobil listrik wajib isi kapasitas baterai > 0 dan sisa baterai tidak boleh melebihi kapasitas.
 	// =========================================================================
 	describe('KendaraanModel - Validasi Plat Nomor & Batas Baterai Molis', () => {
 		it('EP: SEPEDA boleh tanpa plat nomor (otomatis null)', () => {
@@ -304,7 +320,10 @@ describe('Black-box Testing - Equivalence Partitioning & Boundary Value Analysis
 	});
 
 	// =========================================================================
-	// 5. BATAS DURASI SEWA HARIAN PER BULAN DINAMIS & TAHUN KABISAT
+	// 5. BATAS DURASI SEWA HARIAN PER BULAN KALENDER (TERMASUK KABISAT)
+	// Teknik: Boundary Value Analysis (BVA)
+	// Aturan: Durasi sewa harian dibatasi maksimal (jumlah hari bulan berjalan - 1).
+	// Jika durasi mencapai 1 bulan penuh, penyewa diarahkan memakai paket tarif bulanan.
 	// =========================================================================
 	describe('SewaModel - Batas Durasi Sewa Harian per Bulan Dinamis', () => {
 		it('BVA Februari 2026 (non-kabisat, 28 hari): 27 valid, 28 gagal (wajib bulanan), 0 gagal', () => {
@@ -484,7 +503,9 @@ describe('Black-box Testing - Equivalence Partitioning & Boundary Value Analysis
 	});
 
 	// =========================================================================
-	// 6. VALIDASI TANGGAL MULAI SEWA (KEMARIN VS HARI INI VS MASA DEPAN)
+	// 6. VALIDASI TANGGAL MULAI SEWA
+	// Teknik: Boundary Value Analysis (BVA: kemarin, hari ini, masa depan)
+	// Aturan: Tanggal kemarin dilarang (masa lalu). Hari ini dan masa depan diperbolehkan.
 	// =========================================================================
 	describe('SewaModel - Validasi Tanggal Mulai Sewa', () => {
 		const todayFixed = createUtcDate(2026, 11, 21);
@@ -550,7 +571,12 @@ describe('Black-box Testing - Equivalence Partitioning & Boundary Value Analysis
 	});
 
 	// =========================================================================
-	// 7. ANGKA EKSAK BIAYA SEWA, LISTRIK, DAN TOTAL (MURNI TANPA BIAYA SILUMAN)
+	// 7. KALKULASI TARIF SEWA, BIAYA LISTRIK, DAN TOTAL PEMBAYARAN
+	// Teknik: EP (pengujian nilai eksak sesuai rumus bisnis murni)
+	// Aturan:
+	// - Harian: jumlah hari x tarif harian
+	// - Bulanan: diskon flat 25x tarif harian
+	// - Listrik EV: (kapasitas penuh - sisa baterai) x tarif listrik per kWh
 	// =========================================================================
 	describe('SewaModel - Angka Eksak Biaya Murni Tanpa Biaya Tersembunyi', () => {
 		it('Eksak: Sewa harian 3 hari * Rp 10.000 = tepat Rp 30.000', () => {

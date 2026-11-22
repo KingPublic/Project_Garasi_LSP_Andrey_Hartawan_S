@@ -1,35 +1,31 @@
-/**
- * @file UserModel.ts
- * @description Model domain OOP untuk pengguna (User) sistem penyewaan garasi.
- * Menerapkan enkapsulasi data, validasi registrasi penyewa, dan aturan otorisasi status verifikasi.
- */
-
+import { BaseModel } from './BaseModel';
 import type { Role, StatusVerifikasi, UserDTO } from './types';
 
 /**
- * Representasi domain pengguna (Admin atau Penyewa).
+ * Menyimpan data dan aturan pengguna (Admin dan Penyewa).
+ * Mengatur hak akses sewa berdasarkan status verifikasi identitas (KTP/NIK).
  *
- * @class UserModel
+ * @author Andrey Hartawan Suwardi
+ * @version 1.0
  */
-export class UserModel {
+export class UserModel extends BaseModel<UserDTO> {
 	public readonly id?: number;
-	public readonly nik: string | null;
+	public readonly nik: string | null;                  // wajib 16 digit angka khusus penyewa
 	private _namaLengkap: string;
 	private _noTelepon: string;
 	public readonly email: string;
-	public readonly role: Role;
-	private _statusVerifikasi: StatusVerifikasi;
+	public readonly role: Role;                          // ADMIN atau PENYEWA
+	private _statusVerifikasi: StatusVerifikasi;         // PENDING, APPROVED, REJECTED
 	public readonly passwordHash?: string;
 	public readonly createdAt?: Date;
 
 	/**
-	 * Membuat instance baru dari UserModel dengan validasi integritas data.
+	 * Membuat instance UserModel baru dengan validasi data.
 	 *
-	 * @constructor
-	 * @param {UserDTO} data - Objek data transfer pengguna.
-	 * @throws {Error} Jika validasi NIK, email, nomor telepon, atau nama lengkap gagal.
+	 * @param data data transfer objek pengguna
 	 */
 	constructor(data: UserDTO) {
+		super();
 		UserModel.validateRole(data.role);
 		UserModel.validateNik(data.nik, data.role);
 		UserModel.validateNamaLengkap(data.namaLengkap);
@@ -51,9 +47,7 @@ export class UserModel {
 	/**
 	 * Memvalidasi apakah role pengguna valid ('ADMIN' atau 'PENYEWA').
 	 *
-	 * @static
-	 * @param {Role} role - Role pengguna.
-	 * @throws {Error} Jika role tidak dikenal.
+	 * @param role - Role pengguna.
 	 */
 	public static validateRole(role: Role): void {
 		if (role !== 'ADMIN' && role !== 'PENYEWA') {
@@ -66,10 +60,8 @@ export class UserModel {
 	 * Untuk peran 'PENYEWA', NIK wajib tepat 16 digit angka.
 	 * Untuk peran 'ADMIN', NIK diperbolehkan bernilai null.
 	 *
-	 * @static
-	 * @param {string | null} nik - Nomor NIK calon penyewa.
-	 * @param {Role} role - Role pengguna.
-	 * @throws {Error} Jika NIK tidak memenuhi kriteria 16 digit angka untuk penyewa.
+	 * @param nik - Nomor NIK calon penyewa.
+	 * @param role - Role pengguna.
 	 */
 	public static validateNik(nik: string | null, role: Role): void {
 		if (role === 'ADMIN') {
@@ -89,9 +81,7 @@ export class UserModel {
 	/**
 	 * Memvalidasi nama lengkap (minimal 3 karakter non-kosong).
 	 *
-	 * @static
-	 * @param {string} namaLengkap - Nama lengkap pengguna.
-	 * @throws {Error} Jika nama terlalu pendek atau kosong.
+	 * @param namaLengkap - Nama lengkap pengguna.
 	 */
 	public static validateNamaLengkap(namaLengkap: string): void {
 		if (!namaLengkap || typeof namaLengkap !== 'string' || namaLengkap.trim().length < 3) {
@@ -102,9 +92,7 @@ export class UserModel {
 	/**
 	 * Memvalidasi nomor telepon (10 s.d. 15 digit angka, opsional awalan +).
 	 *
-	 * @static
-	 * @param {string} noTelepon - Nomor kontak telepon.
-	 * @throws {Error} Jika format nomor telepon tidak valid.
+	 * @param noTelepon - Nomor kontak telepon.
 	 */
 	public static validateNoTelepon(noTelepon: string): void {
 		if (!noTelepon || typeof noTelepon !== 'string') {
@@ -119,9 +107,7 @@ export class UserModel {
 	/**
 	 * Memvalidasi alamat email menggunakan pola regex standar.
 	 *
-	 * @static
-	 * @param {string} email - Alamat email pengguna.
-	 * @throws {Error} Jika format email tidak valid.
+	 * @param email - Alamat email pengguna.
 	 */
 	public static validateEmail(email: string): void {
 		if (!email || typeof email !== 'string') {
@@ -136,9 +122,7 @@ export class UserModel {
 	/**
 	 * Memvalidasi status verifikasi.
 	 *
-	 * @static
-	 * @param {StatusVerifikasi} status - Status verifikasi.
-	 * @throws {Error} Jika status tidak valid.
+	 * @param status - Status verifikasi.
 	 */
 	public static validateStatusVerifikasi(status: StatusVerifikasi): void {
 		const validStatuses: StatusVerifikasi[] = ['PENDING', 'APPROVED', 'REJECTED'];
@@ -150,9 +134,7 @@ export class UserModel {
 	/**
 	 * Memvalidasi kata sandi mentah pada saat pendaftaran (minimal 6 karakter).
 	 *
-	 * @static
-	 * @param {string} password - Password mentah pengguna.
-	 * @throws {Error} Jika password kurang dari 6 karakter.
+	 * @param password - Password mentah pengguna.
 	 */
 	public static validateRawPassword(password: string): void {
 		if (!password || typeof password !== 'string' || password.length < 6) {
@@ -160,67 +142,32 @@ export class UserModel {
 		}
 	}
 
-	/**
-	 * Mendapatkan nama lengkap pengguna.
-	 *
-	 * @returns {string} Nama lengkap.
-	 */
 	public get namaLengkap(): string {
 		return this._namaLengkap;
 	}
 
-	/**
-	 * Mengubah nama lengkap pengguna dengan validasi.
-	 *
-	 * @param {string} value - Nama baru.
-	 */
 	public set namaLengkap(value: string) {
 		UserModel.validateNamaLengkap(value);
 		this._namaLengkap = value.trim();
 	}
 
-	/**
-	 * Mendapatkan nomor telepon pengguna.
-	 *
-	 * @returns {string} Nomor telepon.
-	 */
 	public get noTelepon(): string {
 		return this._noTelepon;
 	}
 
-	/**
-	 * Mengubah nomor telepon pengguna dengan validasi.
-	 *
-	 * @param {string} value - Nomor telepon baru.
-	 */
 	public set noTelepon(value: string) {
 		UserModel.validateNoTelepon(value);
 		this._noTelepon = value.trim();
 	}
 
-	/**
-	 * Mendapatkan status verifikasi pengguna saat ini.
-	 *
-	 * @returns {StatusVerifikasi} Status verifikasi ('PENDING' | 'APPROVED' | 'REJECTED').
-	 */
 	public get statusVerifikasi(): StatusVerifikasi {
 		return this._statusVerifikasi;
 	}
 
-	/**
-	 * Menyetujui pendaftaran penyewa (status menjadi 'APPROVED').
-	 *
-	 * @returns {void}
-	 */
 	public approve(): void {
 		this._statusVerifikasi = 'APPROVED';
 	}
 
-	/**
-	 * Menolak pendaftaran penyewa (status menjadi 'REJECTED').
-	 *
-	 * @returns {void}
-	 */
 	public reject(): void {
 		this._statusVerifikasi = 'REJECTED';
 	}
@@ -229,7 +176,7 @@ export class UserModel {
 	 * Memeriksa apakah penyewa memiliki hak akses untuk melakukan sewa garasi.
 	 * Hanya pengguna dengan status verifikasi 'APPROVED' yang diizinkan menyewa.
 	 *
-	 * @returns {boolean} True jika berstatus 'APPROVED', false jika 'PENDING' atau 'REJECTED'.
+	 * @returns True jika berstatus 'APPROVED', false jika 'PENDING' atau 'REJECTED'.
 	 */
 	public bisaMenyewa(): boolean {
 		return this._statusVerifikasi === 'APPROVED';
@@ -237,9 +184,6 @@ export class UserModel {
 
 	/**
 	 * Memvalidasi apakah pengguna diizinkan menyewa, melemparkan Error jika tidak berhak.
-	 *
-	 * @returns {void}
-	 * @throws {Error} Jika status verifikasi belum 'APPROVED'.
 	 */
 	public validasiBisaMenyewa(): void {
 		if (!this.bisaMenyewa()) {
@@ -251,8 +195,6 @@ export class UserModel {
 
 	/**
 	 * Mengonversi model ke bentuk DTO polos.
-	 *
-	 * @returns {UserDTO} Objek DTO.
 	 */
 	public toDTO(): UserDTO {
 		return {
