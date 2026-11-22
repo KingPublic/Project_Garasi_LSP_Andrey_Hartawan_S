@@ -158,15 +158,17 @@ Sistem menyediakan seeder fleksibel yang dapat dijalankan secara terpisah sesuai
 
 ## Pengujian Otomatis & Verifikasi
 
-Proyek ini dilengkapi dengan cakupan pengujian komprehensif (86 skenario test):
-- **Black-box Testing**: *Equivalence Partitioning* (EP) & *Boundary Value Analysis* (BVA) pada validasi input, batas kumulatif 999 unit, dan kompatibilitas kendaraan.
-- **White-box Testing**: *Branch & Path Coverage* pada algoritma anti-bentrok tanggal sewa, kalkulasi pengisian kWh, diskon bulanan dinamis, serta perpanjangan sewa.
-- **Grey-box Testing**: Integrasi repositori, pencegahan celah IDOR, transaksi basis data, dan filter laporan finansial.
+Proyek ini menggunakan unit testing berbasis **Black-box Testing** (31 skenario pengujian dengan Vitest):
+- **Boundary Value Analysis (BVA)**: Menguji batas validasi NIK 16 digit (15, 16, 17 digit), batas kumulatif 999 unit garasi, batas durasi sewa harian per bulan kalender, dan batas kapasitas baterai EV.
+- **Equivalence Partitioning (EP)**: Menguji kelompok tipe sewa, matriks kecocokan 4 tipe kendaraan vs 3 tipe garasi, validasi plat nomor, dan perhitungan tarif murni.
+
+*(Catatan: Pengujian lanjutan berbasis White-box dan Grey-box diarsipkan di folder `tests_legacy/`).*
 
 ### Menjalankan Unit Tests:
 ```bash
 bunx vitest run
 ```
+Hasil: **1 test suite passed (31 tests passed, 0 failed)**.
 
 ### Menjalankan Diagnostik TypeScript / SvelteKit:
 ```bash
@@ -198,7 +200,8 @@ Project_Garasi_LSP/
 │   │   ├── admin/                 # Panel Administrator (Garasi, Verifikasi Calon, Pembayaran, Perpanjang, Laporan)
 │   │   ├── penyewa/               # Panel Penyewa (Dashboard, Sewa Baru)
 │   │   └── api/                   # REST Endpoints (Pengecekan Ketersediaan Garasi)
-│   └── tests/                     # Test Suite (blackbox.spec.ts, whitebox.spec.ts, greybox.spec.ts)
+│   └── tests/                     # Test Suite Utama (blackbox.spec.ts)
+├── tests_legacy/                  # Arsip Pengujian Lanjutan (whitebox, greybox)
 ├── package.json
 └── README.md
 ```
