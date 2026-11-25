@@ -31,30 +31,27 @@
 	let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 	let isEmailValid = $derived(emailRegex.test(emailInput.trim()));
 	let emailFeedback = $derived.by(() => {
-		if (!emailInput && !touched.email) {
-			return { type: 'neutral', message: 'Masukkan email yang terdaftar pada sistem.' };
+		if (!touched.email) {
+			return { type: 'neutral', message: '' };
 		}
-		if (!emailInput && touched.email) {
+		if (!emailInput) {
 			return { type: 'error', message: 'Alamat email wajib diisi.' };
 		}
-		if (!emailInput.includes('@')) {
-			return { type: 'warning', message: 'Format belum lengkap: harus menyertakan tanda "@" (contoh: nama@garasi.com).' };
+		if (!emailInput.includes('@') || !isEmailValid) {
+			return { type: 'warning', message: 'Format email belum valid (contoh: nama@garasi.com).' };
 		}
-		if (!isEmailValid) {
-			return { type: 'warning', message: 'Format domain belum lengkap (contoh: nama@garasi.com).' };
-		}
-		return { type: 'success', message: 'Format email valid.' };
+		return { type: 'success', message: '' };
 	});
 
 	let isPasswordValid = $derived(passwordInput.length > 0);
 	let passwordFeedback = $derived.by(() => {
-		if (!passwordInput && !touched.password) {
-			return { type: 'neutral', message: 'Masukkan kata sandi akun Anda.' };
+		if (!touched.password) {
+			return { type: 'neutral', message: '' };
 		}
-		if (!passwordInput && touched.password) {
+		if (!passwordInput) {
 			return { type: 'error', message: 'Kata sandi wajib diisi.' };
 		}
-		return { type: 'success', message: 'Kata sandi terisi.' };
+		return { type: 'neutral', message: '' };
 	});
 
 	function handleSubmit(e: SubmitEvent) {
@@ -82,10 +79,10 @@
 				<LockIcon size={26} />
 			</div>
 			<h2 class="text-2xl font-black text-prussian tracking-tight">
-				Masuk ke Portal
+				Masuk
 			</h2>
 			<p class="mt-1.5 text-xs text-slate-500">
-				Masukkan email dan kata sandi untuk mengakses layanan Garasi Ta
+				Masukkan email dan kata sandi akun Anda.
 			</p>
 		</div>
 
@@ -94,7 +91,7 @@
 			<div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-3">
 				<AlertTriangleIcon size={18} class="text-rose-500 shrink-0 mt-0.5" />
 				<div>
-					<p class="font-bold text-rose-900">Autentikasi Gagal</p>
+					<p class="font-bold text-rose-900">Login Gagal</p>
 					<p class="text-rose-700 mt-0.5 leading-relaxed">{form.error}</p>
 				</div>
 			</div>
@@ -131,22 +128,18 @@
 						</span>
 					{/if}
 				</div>
-				<div class="mt-1 flex items-center gap-1.5 text-xs {emailFeedback.type === 'error'
-					? 'text-rose-600 font-medium'
-					: emailFeedback.type === 'warning'
-						? 'text-amber-700 font-medium'
-						: emailFeedback.type === 'success'
-							? 'text-emerald-700 font-medium'
-							: 'text-slate-500'}">
-					{#if emailFeedback.type === 'error'}
-						<AlertTriangleIcon size={13} class="shrink-0" />
-					{:else if emailFeedback.type === 'warning'}
-						<InfoIcon size={13} class="shrink-0" />
-					{:else if emailFeedback.type === 'success'}
-						<CheckIcon size={13} class="shrink-0" />
-					{/if}
-					<span>{emailFeedback.message}</span>
-				</div>
+				{#if emailFeedback.message}
+					<div class="mt-1 flex items-center gap-1.5 text-xs {emailFeedback.type === 'error'
+						? 'text-rose-600 font-medium'
+						: 'text-amber-700 font-medium'}">
+						{#if emailFeedback.type === 'error'}
+							<AlertTriangleIcon size={13} class="shrink-0" />
+						{:else if emailFeedback.type === 'warning'}
+							<InfoIcon size={13} class="shrink-0" />
+						{/if}
+						<span>{emailFeedback.message}</span>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Password Input -->
@@ -167,14 +160,12 @@
 						? 'border-rose-400 bg-rose-50/20 focus:border-rose-500 focus:ring-2 focus:ring-rose-200'
 						: 'border-slate-300 focus:ring-2 focus:ring-prussian focus:border-prussian'}"
 				/>
-				<div class="mt-1 flex items-center gap-1.5 text-xs {passwordFeedback.type === 'error'
-					? 'text-rose-600 font-medium'
-					: 'text-slate-500'}">
-					{#if passwordFeedback.type === 'error'}
+				{#if passwordFeedback.message}
+					<div class="mt-1 flex items-center gap-1.5 text-xs text-rose-600 font-medium">
 						<AlertTriangleIcon size={13} class="shrink-0" />
-					{/if}
-					<span>{passwordFeedback.message}</span>
-				</div>
+						<span>{passwordFeedback.message}</span>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Tombol Submit -->

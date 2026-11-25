@@ -7,12 +7,12 @@
 		<!-- Hero Section -->
 		<div class="text-center max-w-3xl mx-auto">
 			<h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-prussian tracking-tight leading-tight">
-				Solusi Penitipan Kendaraan <br class="hidden sm:inline" />
-				<span class="text-prussian">Aman, Terstruktur, &</span> <span class="text-garage-orange">Transparan</span>
+				Sewa Garasi Kendaraan <br class="hidden sm:inline" />
+				Harian &amp; <span class="text-garage-orange">Bulanan</span>
 			</h1>
 
 			<p class="mt-6 text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-				Kelola dan sewa unit garasi untuk sepeda, sepeda motor, mobil konvensional, serta mobil listrik dengan fasilitas pengisian daya baterai kWh otomatis tanpa biaya tersembunyi.
+				Layanan penitipan dan penyewaan unit garasi untuk sepeda, sepeda motor, mobil, serta mobil listrik dengan perhitungan tarif sewa dan pengisian daya baterai per kWh.
 			</p>
 
 			<!-- Action Buttons -->
@@ -43,11 +43,11 @@
 				<div class="flex items-center gap-2 mb-2">
 					<h3 class="text-base font-bold text-slate-900">Sepeda & Motor</h3>
 					<span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200">
-						Kode S001-S999
+						S001–S999
 					</span>
 				</div>
 				<p class="text-xs text-slate-600 leading-relaxed">
-					Garasi khusus kendaraan roda dua (sepeda manual dan sepeda motor) dengan proteksi cuaca dan keamanan gembok ganda.
+					Garasi khusus kendaraan roda dua untuk sepeda manual dan sepeda motor.
 				</p>
 			</div>
 
@@ -59,11 +59,11 @@
 				<div class="flex items-center gap-2 mb-2">
 					<h3 class="text-base font-bold text-slate-900">Mobil Konvensional</h3>
 					<span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
-						Kode C001-C999
+						C001–C999
 					</span>
 				</div>
 				<p class="text-xs text-slate-600 leading-relaxed">
-					Unit luas untuk mobil bensin/diesel keluarga dan niaga dengan tarif sewa harian flat atau paket bulanan hemat 25x tarif.
+					Unit garasi mobil bensin atau diesel dengan pilihan sewa harian atau paket bulanan setara 25 hari tarif harian.
 				</p>
 			</div>
 
@@ -75,11 +75,11 @@
 				<div class="flex items-center gap-2 mb-2">
 					<h3 class="text-base font-bold text-slate-900">Mobil Listrik (EV)</h3>
 					<span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
-						Kode E001-E999
+						E001–E999
 					</span>
 				</div>
 				<p class="text-xs text-slate-600 leading-relaxed">
-					Dilengkapi stasiun pengisian daya listrik dedicated. Perhitungan biaya cas baterai hingga 100% penuh otomatis per kWh tanpa markup.
+					Dilengkapi pengisian daya baterai hingga penuh dengan tarif dihitung berdasarkan selisih kWh baterai.
 				</p>
 			</div>
 		</div>

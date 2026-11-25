@@ -215,18 +215,16 @@
 
 <div class="max-w-4xl mx-auto space-y-6">
 	<!-- Page Header -->
-	<div class="rounded-2xl bg-gradient-to-r from-carbon-black via-gunmetal to-carbon-black text-white p-6 shadow-sm border border-gunmetal/60 flex items-center justify-between">
-		<div>
-			<a href="/penyewa" class="text-xs font-semibold text-garage-orange hover:underline mb-1 inline-flex items-center gap-1">
-				&larr; Kembali ke Dashboard
-			</a>
-			<h1 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2 mt-1">
-				<span>Formulir Sewa Garasi Baru</span>
-			</h1>
-			<p class="text-xs text-slate-300 mt-0.5">
-				Pilih unit garasi bebas bentrok jadwal, transparan tanpa markup atau biaya tersembunyi.
-			</p>
-		</div>
+	<div class="pb-4 border-b border-slate-200">
+		<a href="/penyewa" class="text-xs font-semibold text-slate-500 hover:text-carbon-black mb-2 inline-flex items-center gap-1">
+			&larr; Kembali ke Dashboard
+		</a>
+		<h1 class="text-xl sm:text-2xl font-bold text-carbon-black tracking-tight">
+			Sewa Garasi Baru
+		</h1>
+		<p class="text-xs sm:text-sm text-slate-500 mt-1">
+			Lengkapi data kendaraan, jadwal sewa, dan bukti pembayaran.
+		</p>
 	</div>
 
 	<!-- Error Alert -->
@@ -518,14 +516,14 @@
 			<div
 				class="p-3 bg-slate-50 rounded-xl text-xs text-slate-600 flex items-center justify-between"
 			>
-				<span>Periode Sewa Yang Dihitung:</span>
+				<span>Periode Sewa:</span>
 				<span class="font-bold text-prussian"
 					>{tanggalMulai} s.d {calculatedEndDate}</span
 				>
 			</div>
 		</div>
 
-		<!-- Step 3: Pilih Unit Garasi Bebas Bentrok -->
+		<!-- Step 3: Pilih Unit Garasi -->
 		<div
 			class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4"
 		>
@@ -539,7 +537,7 @@
 						class="w-6 h-6 rounded-full bg-prussian text-white text-xs flex items-center justify-center font-bold"
 						>3</span
 					>
-					Pilih Unit Garasi Yang Tersedia
+					Pilih Unit Garasi
 				</h2>
 				{#if isLoadingGarasi}
 					<span
@@ -750,7 +748,7 @@
 					class="pt-3 border-t border-prussian-light flex items-center justify-between"
 				>
 					<span class="text-sm font-bold text-slate-200"
-						>Total Yang Harus Dibayar:</span
+						>Total Pembayaran:</span
 					>
 					<span class="text-2xl font-black text-garage-orange">
 						{formatRupiah(costCalculation.totalBiaya)}
@@ -844,7 +842,7 @@
 					</svg>
 					<span>Memproses Transaksi Sewa...</span>
 				{:else}
-					<span>Konfirmasi & Bayar Sewa Sekarang</span>
+					<span>Kirim Transaksi Sewa</span>
 					<ArrowRightIcon size={18} />
 				{/if}
 			</button>

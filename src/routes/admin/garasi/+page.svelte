@@ -58,31 +58,27 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<!-- Banner Header Inventaris Garasi -->
-	<div class="rounded-2xl bg-gradient-to-r from-carbon-black via-gunmetal to-carbon-black text-white p-6 shadow-sm border border-gunmetal/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+	<!-- Page Header -->
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
 		<div>
-			<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/10 text-garage-orange text-xs font-bold mb-2">
-				<span class="w-1.5 h-1.5 rounded-full bg-garage-orange"></span>
-				<span>Panel Inventaris Garasi</span>
-			</div>
-			<h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">
-				Selamat Datang di Manajemen Garasi Ta!
+			<h1 class="text-xl sm:text-2xl font-bold text-carbon-black tracking-tight">
+				Unit Garasi
 			</h1>
-			<p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-				Pantau ketersediaan unit sewa, kelola kapasitas garasi, tarif harian, serta stasiun pengisian daya EV secara real-time.
+			<p class="text-xs sm:text-sm text-slate-500 mt-1">
+				Kelola daftar unit garasi, tarif harian, dan ketersediaan hari ini.
 			</p>
 		</div>
 		<button
 			type="button"
 			onclick={() => (showForm = !showForm)}
-			class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-xs bg-garage-orange text-carbon-black hover:bg-garage-orange-hover shadow-md shadow-garage-orange/20 transition-all cursor-pointer shrink-0"
+			class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-garage-orange text-carbon-black hover:bg-garage-orange-hover shadow-sm transition-all cursor-pointer shrink-0"
 		>
 			{#if showForm}
 				<XCircleIcon size={16} />
 				<span>Tutup Form</span>
 			{:else}
 				<PlusIcon size={16} />
-				<span>+ Tambah Garasi Massal</span>
+				<span>Tambah Unit Garasi</span>
 			{/if}
 		</button>
 	</div>
@@ -92,7 +88,7 @@
 		<div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-3">
 			<AlertTriangleIcon size={18} class="text-rose-500 shrink-0 mt-0.5" />
 			<div>
-				<p class="font-bold">Gagal Membuat Unit Garasi</p>
+				<p class="font-bold">Gagal Menyimpan</p>
 				<p class="text-rose-700 mt-0.5">{form.error}</p>
 			</div>
 		</div>
@@ -102,7 +98,7 @@
 		<div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-3">
 			<CheckCircleIcon size={18} class="text-emerald-600 shrink-0 mt-0.5" />
 			<div>
-				<p class="font-bold">Operasi Berhasil</p>
+				<p class="font-bold">Berhasil</p>
 				<p class="text-emerald-700 mt-0.5">{form.message}</p>
 			</div>
 		</div>
@@ -111,9 +107,9 @@
 	<!-- Ringkasan Statistik Unit Garasi -->
 	<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 		<!-- Total Unit -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
-				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Kapasitas</p>
+				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Unit</p>
 				<div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
 					<BuildingIcon size={16} />
 				</div>
@@ -121,13 +117,13 @@
 			<p class="text-2xl font-black text-carbon-black mt-2">
 				{data.stats.total} <span class="text-xs font-normal text-slate-400">Unit</span>
 			</p>
-			<p class="text-[11px] text-slate-400 mt-1">Maks. 999 unit per kategori</p>
+			<p class="text-[11px] text-slate-400 mt-1">Maks. 999 per tipe</p>
 		</div>
 
 		<!-- Unit Tersedia -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
-				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Garasi Tersedia</p>
+				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tersedia</p>
 				<div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
 					<CheckCircleIcon size={16} />
 				</div>
@@ -135,13 +131,13 @@
 			<p class="text-2xl font-black text-emerald-600 mt-2">
 				{data.stats.tersedia} <span class="text-xs font-normal text-slate-400">Unit</span>
 			</p>
-			<p class="text-[11px] text-emerald-600 mt-1 font-medium">Siap disewa hari ini</p>
+			<p class="text-[11px] text-emerald-600 mt-1 font-medium">Tersedia hari ini</p>
 		</div>
 
 		<!-- Unit Terpakai -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
-				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sedang Terisi</p>
+				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Terisi</p>
 				<div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
 					<ClockIcon size={16} />
 				</div>
@@ -149,7 +145,7 @@
 			<p class="text-2xl font-black text-rose-600 mt-2">
 				{data.stats.terpakai} <span class="text-xs font-normal text-slate-400">Unit</span>
 			</p>
-			<p class="text-[11px] text-rose-600 mt-1 font-medium">Unit aktif berjalan</p>
+			<p class="text-[11px] text-rose-600 mt-1 font-medium">Sedang disewa hari ini</p>
 		</div>
 
 		<!-- Rincian Per Tipe -->
@@ -178,17 +174,17 @@
 		</div>
 	</div>
 
-	<!-- Form Tambah Unit Garasi Massal (Collapsible) -->
+	<!-- Form Tambah Unit Garasi (Collapsible) -->
 	{#if showForm}
-		<div class="bg-white rounded-2xl p-6 border-2 border-garage-orange/40 shadow-sm animate-in fade-in duration-150">
+		<div class="bg-white rounded-2xl p-6 border border-garage-orange/50 shadow-sm">
 			<div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
 				<div>
 					<h2 class="text-base font-bold text-carbon-black flex items-center gap-2">
 						<PlusIcon size={18} class="text-garage-orange" />
-						<span>Pembuatan Unit Garasi Massal Berkelompok</span>
+						<span>Tambah Unit Garasi</span>
 					</h2>
 					<p class="text-xs text-slate-500 mt-0.5">
-						Sistem akan secara otomatis melanjutkan penomoran urut (3 digit: S001-S999, C001-C999, E001-E999).
+						Kode unit dibuat otomatis berurutan (S001–S999, C001–C999, E001–E999).
 					</p>
 				</div>
 			</div>
@@ -279,7 +275,7 @@
 						disabled={isSubmitting}
 						class="px-5 py-2 rounded-xl text-xs font-bold text-carbon-black bg-garage-orange hover:bg-garage-orange-hover shadow-sm transition-all cursor-pointer disabled:opacity-60"
 					>
-						{isSubmitting ? 'Memproses...' : 'Simpan & Generate Unit'}
+						{isSubmitting ? 'Menyimpan...' : 'Simpan Unit'}
 					</button>
 				</div>
 			</form>
@@ -400,19 +396,19 @@
 										<span class="font-semibold text-emerald-700">{formatRupiah(garasi.hargaListrikPerKwh)}</span>
 										<span class="text-slate-500"> / kWh</span>
 									{:else}
-										<span class="text-slate-400 italic">- (Tidak Ada)</span>
+										<span class="text-slate-400">-</span>
 									{/if}
 								</td>
 
 								<!-- Status -->
 								<td class="py-3 px-5">
 									{#if garasi.status === 'AVAILABLE'}
-										<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-											<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Tersedia
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+											Tersedia
 										</span>
 									{:else}
-										<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-200">
-											<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Sedang Terisi
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-200">
+											Terisi
 										</span>
 									{/if}
 								</td>

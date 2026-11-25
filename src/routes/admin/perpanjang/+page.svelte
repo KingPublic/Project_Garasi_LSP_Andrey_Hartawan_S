@@ -129,20 +129,14 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<!-- Hero Welcome Banner -->
-	<div class="rounded-2xl bg-gradient-to-r from-carbon-black via-gunmetal to-carbon-black text-white p-6 shadow-sm border border-gunmetal/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-		<div>
-			<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/10 text-garage-orange text-xs font-bold mb-2">
-				<span class="w-1.5 h-1.5 rounded-full bg-garage-orange"></span>
-				<span>Layanan Durasi Fleksibel</span>
-			</div>
-			<h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">
-				Perpanjangan Masa Sewa Aktif
-			</h1>
-			<p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-				Perpanjang durasi sewa pelanggan secara cepat dengan kalkulasi tarif dinamis (paket blok bulanan 25x + tarif harian).
-			</p>
-		</div>
+	<!-- Page Header -->
+	<div class="pb-4 border-b border-slate-200">
+		<h1 class="text-xl sm:text-2xl font-bold text-carbon-black tracking-tight">
+			Perpanjangan Sewa
+		</h1>
+		<p class="text-xs sm:text-sm text-slate-500 mt-1">
+			Perpanjang tanggal selesai transaksi sewa yang sedang aktif.
+		</p>
 	</div>
 
 	<!-- Alert Feedback -->
@@ -290,7 +284,7 @@
 	<!-- Modal Perpanjangan Sewa -->
 	{#if selectedSewa}
 		<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-prussian/60 backdrop-blur-xs">
-			<div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+			<div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5">
 				<div class="flex items-center justify-between pb-3 border-b border-slate-100">
 					<div>
 						<h2 class="text-lg font-extrabold text-prussian flex items-center gap-2">
@@ -304,7 +298,8 @@
 					<button
 						type="button"
 						onclick={closeModal}
-						class="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+						aria-label="Tutup Modal"
+						class="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer"
 					>
 						<XCircleIcon size={18} />
 					</button>
@@ -363,7 +358,7 @@
 								<span class="font-bold text-white text-sm">+{kalkulasiTambahan.tambahanHari} Hari</span>
 							</div>
 							<div class="pt-2 border-t border-prussian-light flex items-center justify-between">
-								<span class="text-xs font-bold text-slate-200">Biaya Tambahan Yang Harus Dibayar:</span>
+								<span class="text-xs font-bold text-slate-200">Biaya Tambahan:</span>
 								<span class="text-xl font-black text-garage-orange">
 									{formatRupiah(kalkulasiTambahan.estimasiBiaya)}
 								</span>

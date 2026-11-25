@@ -2,7 +2,6 @@
 	import type { ActionData, PageData } from './$types';
 	import { formatDateIndo } from '$lib/utils/format';
 	import {
-		ShieldCheckIcon,
 		UserIcon,
 		ClockIcon,
 		CheckCircleIcon,
@@ -41,20 +40,14 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<!-- Hero Welcome Banner -->
-	<div class="rounded-2xl bg-gradient-to-r from-carbon-black via-gunmetal to-carbon-black text-white p-6 shadow-sm border border-gunmetal/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-		<div>
-			<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/10 text-garage-orange text-xs font-bold mb-2">
-				<span class="w-1.5 h-1.5 rounded-full bg-garage-orange"></span>
-				<span>Pusat Verifikasi Identitas</span>
-			</div>
-			<h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">
-				Verifikasi & Validasi Calon Penyewa
-			</h1>
-			<p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-				Tinjau data NIK 16 digit calon penyewa baru. Hanya akun yang disetujui (Approved) yang dapat melakukan reservasi garasi.
-			</p>
-		</div>
+	<!-- Page Header -->
+	<div class="pb-4 border-b border-slate-200">
+		<h1 class="text-xl sm:text-2xl font-bold text-carbon-black tracking-tight">
+			Verifikasi Calon Penyewa
+		</h1>
+		<p class="text-xs sm:text-sm text-slate-500 mt-1">
+			Periksa NIK 16 digit pendaftar sebelum akun diizinkan menyewa garasi.
+		</p>
 	</div>
 
 	<!-- Alert Feedback -->
@@ -95,9 +88,9 @@
 		</div>
 
 		<!-- Menunggu Verifikasi (Pending) -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
-				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Menunggu (Pending)</p>
+				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Menunggu</p>
 				<div class="w-8 h-8 rounded-xl bg-amber-50 text-garage-orange flex items-center justify-center">
 					<ClockIcon size={16} />
 				</div>
@@ -105,13 +98,13 @@
 			<p class="text-2xl font-black text-garage-orange mt-2">
 				{data.stats.pending} <span class="text-xs font-normal text-slate-400">Orang</span>
 			</p>
-			<p class="text-[11px] text-amber-700 mt-1 font-medium">Perlu review admin</p>
+			<p class="text-[11px] text-amber-700 mt-1 font-medium">Belum diverifikasi</p>
 		</div>
 
 		<!-- Disetujui (Approved) -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
-				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Disetujui (Approved)</p>
+				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Disetujui</p>
 				<div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
 					<CheckCircleIcon size={16} />
 				</div>
@@ -119,13 +112,13 @@
 			<p class="text-2xl font-black text-emerald-600 mt-2">
 				{data.stats.approved} <span class="text-xs font-normal text-slate-400">Orang</span>
 			</p>
-			<p class="text-[11px] text-emerald-600 mt-1 font-medium">Dapat menyewa garasi</p>
+			<p class="text-[11px] text-emerald-600 mt-1 font-medium">Boleh menyewa</p>
 		</div>
 
 		<!-- Ditolak (Rejected) -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
-				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ditolak (Rejected)</p>
+				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ditolak</p>
 				<div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
 					<XCircleIcon size={16} />
 				</div>
@@ -133,7 +126,7 @@
 			<p class="text-2xl font-black text-rose-600 mt-2">
 				{data.stats.rejected} <span class="text-xs font-normal text-slate-400">Orang</span>
 			</p>
-			<p class="text-[11px] text-rose-600 mt-1 font-medium">Tidak diizinkan sewa</p>
+			<p class="text-[11px] text-rose-600 mt-1 font-medium">Akses sewa ditolak</p>
 		</div>
 	</div>
 
@@ -240,16 +233,16 @@
 								<!-- Status Badge -->
 								<td class="py-3 px-5">
 									{#if penyewa.statusVerifikasi === 'APPROVED'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-											<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Disetujui
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+											Disetujui
 										</span>
 									{:else if penyewa.statusVerifikasi === 'PENDING'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-											<span class="w-1.5 h-1.5 rounded-full bg-garage-orange"></span> Menunggu
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+											Menunggu
 										</span>
 									{:else}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
-											<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Ditolak
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+											Ditolak
 										</span>
 									{/if}
 								</td>

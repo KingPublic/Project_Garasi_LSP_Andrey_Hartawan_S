@@ -35,15 +35,15 @@
 		return currentPath === path;
 	}
 
-	// Generate clean breadcrumb text
+	// Breadcrumb navigasi halaman
 	let breadcrumbText = $derived.by(() => {
-		if (currentPath === '/admin/garasi') return 'Admin / Manajemen Unit Garasi';
-		if (currentPath === '/admin/verifikasi') return 'Admin / Verifikasi Calon Penyewa';
+		if (currentPath === '/admin/garasi') return 'Admin / Unit Garasi';
+		if (currentPath === '/admin/verifikasi') return 'Admin / Verifikasi Calon';
 		if (currentPath === '/admin/pembayaran') return 'Admin / Verifikasi Pembayaran';
-		if (currentPath === '/admin/perpanjang') return 'Admin / Perpanjangan Masa Sewa';
-		if (currentPath === '/admin/laporan') return 'Admin / Laporan & Keuangan';
-		if (currentPath === '/penyewa') return 'Penyewa / Dashboard Utama';
-		if (currentPath === '/penyewa/sewa-baru') return 'Penyewa / Formulir Sewa Baru';
+		if (currentPath === '/admin/perpanjang') return 'Admin / Perpanjangan Sewa';
+		if (currentPath === '/admin/laporan') return 'Admin / Laporan';
+		if (currentPath === '/penyewa') return 'Penyewa / Dashboard';
+		if (currentPath === '/penyewa/sewa-baru') return 'Penyewa / Sewa Garasi Baru';
 		return 'Dashboard';
 	});
 </script>
@@ -172,16 +172,17 @@
 						</div>
 						<div class="flex-1 min-w-0">
 							<p class="text-xs font-bold text-white truncate leading-tight">{data.user.namaLengkap}</p>
-							<div class="flex items-center gap-1 mt-0.5">
-								<span class="text-[9px] font-bold px-1.5 py-0.2 rounded {data.user.role === 'ADMIN' ? 'bg-amber-400/20 text-garage-orange' : 'bg-sky-400/20 text-sky-300'}">
-									{data.user.role}
-								</span>
-								{#if data.user.role === 'PENYEWA'}
-									<span class="text-[9px] font-bold px-1.5 py-0.2 rounded {data.user.statusVerifikasi === 'APPROVED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-garage-orange'}">
-										{data.user.statusVerifikasi}
-									</span>
+							<p class="text-[11px] text-slate-400 truncate mt-0.5">
+								{#if data.user.role === 'ADMIN'}
+									Administrator
+								{:else if data.user.statusVerifikasi === 'APPROVED'}
+									Penyewa Terverifikasi
+								{:else if data.user.statusVerifikasi === 'PENDING'}
+									Menunggu Verifikasi
+								{:else}
+									Akun Ditolak
 								{/if}
-							</div>
+							</p>
 						</div>
 					</div>
 
@@ -239,7 +240,7 @@
 									</div>
 									<span class="text-sm font-black text-white">GARASI TA</span>
 								</div>
-								<button onclick={closeMobileMenu} class="p-1 rounded-lg text-slate-400 hover:text-white">✕</button>
+								<button type="button" onclick={closeMobileMenu} aria-label="Tutup Menu" class="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer">✕</button>
 							</div>
 
 							<nav class="space-y-1">
@@ -251,7 +252,7 @@
 									<a href="/admin/laporan" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-gunmetal">Laporan & Keuangan</a>
 								{:else}
 									<a href="/penyewa" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-gunmetal">Dashboard Saya</a>
-									<a href="/penyewa/sewa-baru" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-bold text-garage-orange hover:bg-gunmetal">+ Sewa Garasi Baru</a>
+									<a href="/penyewa/sewa-baru" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-bold text-garage-orange hover:bg-gunmetal">Sewa Garasi Baru</a>
 								{/if}
 								<a href="/" onclick={closeMobileMenu} class="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-gunmetal">Lihat Website</a>
 							</nav>
@@ -268,18 +269,14 @@
 
 			<!-- Right Main Content Area -->
 			<div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-				<!-- Desktop Top Breadcrumb & Status Bar -->
-				<header class="hidden md:flex h-16 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-8 items-center justify-between sticky top-0 z-20">
-					<div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
-						<span class="text-slate-400 font-normal">Navigasi /</span>
-						<span class="text-carbon-black font-bold">{breadcrumbText}</span>
+				<!-- Desktop Topbar -->
+				<header class="hidden md:flex h-14 bg-white border-b border-slate-200 px-8 items-center justify-between sticky top-0 z-20">
+					<div class="flex items-center gap-2 text-xs text-slate-600 font-semibold">
+						<span>{breadcrumbText}</span>
 					</div>
 
-					<div class="flex items-center gap-3">
-						<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-800 text-[11px] font-semibold">
-							<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-							<span>Sistem Aktif &amp; Terkoneksi</span>
-						</div>
+					<div class="text-xs text-slate-500">
+						{data.user.email}
 					</div>
 				</header>
 
@@ -318,7 +315,7 @@
 								href={data.user.role === 'ADMIN' ? '/admin/garasi' : '/penyewa'}
 								class="px-4 py-2 rounded-xl text-xs font-bold bg-garage-orange text-carbon-black hover:bg-garage-orange-hover shadow-sm transition-all"
 							>
-								Buka Dashboard &rarr;
+								Dashboard
 							</a>
 						{:else}
 							<a
@@ -346,9 +343,8 @@
 
 		<!-- Clean Footer -->
 		<footer class="bg-carbon-black text-slate-400 border-t border-gunmetal/40 py-6 text-xs">
-			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400">
-				<p>&copy; 2026 Garasi Ta. Sistem Manajemen &amp; Persewaan Garasi Kendaraan.</p>
-				<p class="text-slate-500 text-[11px]">Solusi Cepat, Aman, &amp; Terpercaya</p>
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 text-slate-400">
+				<p>&copy; 2026 Garasi Ta</p>
 			</div>
 		</footer>
 	{/if}

@@ -2,7 +2,6 @@
 	import type { PageData } from './$types';
 	import { formatRupiah, formatDateIndo } from '$lib/utils/format';
 	import {
-		ShieldCheckIcon,
 		ClockIcon,
 		XCircleIcon,
 		PlusIcon,
@@ -10,8 +9,7 @@
 		FileTextIcon,
 		CarIcon,
 		BikeIcon,
-		ZapIcon,
-		InfoIcon
+		ZapIcon
 	} from '$lib/components/icons';
 
 	let { data }: { data: PageData } = $props();
@@ -30,31 +28,26 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<!-- Top Welcome & Verification Banner -->
+	<!-- Page Header & Status Akun -->
 	{#if data.penyewaUser.statusVerifikasi === 'APPROVED'}
-		<div class="rounded-2xl bg-gradient-to-r from-carbon-black via-gunmetal to-carbon-black text-white p-6 shadow-sm border border-gunmetal/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-			<div class="flex items-start gap-4">
-				<div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
-					<ShieldCheckIcon size={24} />
+		<div class="pb-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+			<div>
+				<div class="flex items-center gap-2.5">
+					<h1 class="text-xl sm:text-2xl font-bold text-carbon-black tracking-tight">
+						Halo, {data.penyewaUser.namaLengkap}
+					</h1>
+					<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+						Terverifikasi
+					</span>
 				</div>
-				<div>
-					<div class="flex items-center gap-2">
-						<h1 class="text-xl sm:text-2xl font-black text-white">
-							Halo, {data.penyewaUser.namaLengkap}!
-						</h1>
-						<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-							Terverifikasi
-						</span>
-					</div>
-					<p class="text-xs sm:text-sm text-slate-300 mt-1">
-						NIK: <span class="font-mono font-semibold text-white">{data.penyewaUser.nik}</span> • Akun Anda aktif dan siap melakukan transaksi sewa garasi kapan saja.
-					</p>
-				</div>
+				<p class="text-xs sm:text-sm text-slate-500 mt-1">
+					NIK: <span class="font-mono font-medium text-slate-700">{data.penyewaUser.nik}</span>
+				</p>
 			</div>
 			<div>
 				<a
 					href="/penyewa/sewa-baru"
-					class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs bg-garage-orange text-carbon-black hover:bg-garage-orange-hover shadow-md transition-all cursor-pointer shrink-0"
+					class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-garage-orange text-carbon-black hover:bg-garage-orange-hover shadow-sm transition-all cursor-pointer shrink-0"
 				>
 					<PlusIcon size={15} />
 					<span>Sewa Garasi Baru</span>
@@ -168,10 +161,10 @@
 			<div>
 				<h2 class="text-base font-bold text-carbon-black flex items-center gap-2">
 					<FileTextIcon size={18} class="text-carbon-black" />
-					<span>Riwayat Transaksi Sewa Garasi Anda</span>
+					<span>Riwayat Sewa</span>
 				</h2>
 				<p class="text-xs text-slate-500 mt-0.5">
-					Seluruh transaksi sewa garasi dan rincian biaya pengisian baterai transparan tanpa biaya tersembunyi.
+					Daftar transaksi sewa garasi beserta rincian biaya.
 				</p>
 			</div>
 			{#if data.penyewaUser.statusVerifikasi === 'APPROVED'}
@@ -179,7 +172,7 @@
 					href="/penyewa/sewa-baru"
 					class="text-xs font-bold text-garage-orange hover:underline flex items-center gap-1"
 				>
-					<span>+ Sewa Baru &rarr;</span>
+					<span>Sewa Baru</span>
 				</a>
 			{/if}
 		</div>
@@ -294,20 +287,19 @@
 								<!-- Status Sewa -->
 								<td class="py-3 px-5">
 									{#if sewa.statusSewa === 'MENUNGGU_VERIFIKASI'}
-										<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-											<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
 											Menunggu Verifikasi
 										</span>
 									{:else if sewa.statusSewa === 'AKTIF'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-											<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Aktif
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+											Aktif
 										</span>
 									{:else if sewa.statusSewa === 'DITOLAK'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
-											<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Ditolak
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+											Ditolak
 										</span>
 									{:else}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
 											Selesai
 										</span>
 									{/if}

@@ -2,7 +2,6 @@
 	import type { PageData } from './$types';
 	import { formatRupiah, formatDateIndo } from '$lib/utils/format';
 	import {
-		FileTextIcon,
 		PrinterIcon,
 		DollarSignIcon,
 		BuildingIcon,
@@ -38,35 +37,31 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<!-- Hero Welcome Banner with Print Button -->
-	<div class="rounded-2xl bg-gradient-to-r from-carbon-black via-gunmetal to-carbon-black text-white p-6 shadow-sm border border-gunmetal/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+	<!-- Page Header with Print Button -->
+	<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
 		<div>
-			<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/10 text-garage-orange text-xs font-bold mb-2">
-				<span class="w-1.5 h-1.5 rounded-full bg-garage-orange"></span>
-				<span>Laporan Keuangan & Performa</span>
-			</div>
-			<h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">
-				Laporan Persewaan & Keuangan
+			<h1 class="text-xl sm:text-2xl font-bold text-carbon-black tracking-tight">
+				Laporan Persewaan
 			</h1>
-			<p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-				Rekapitulasi omzet dan rincian transaksi persewaan garasi dengan 4 dimensi filter komprehensif.
+			<p class="text-xs sm:text-sm text-slate-500 mt-1">
+				Rekapitulasi transaksi dan pendapatan sewa garasi.
 			</p>
 		</div>
 
 		<button
 			type="button"
 			onclick={printReport}
-			class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-white text-carbon-black hover:bg-slate-100 shadow-sm transition-all cursor-pointer print:hidden shrink-0"
+			class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-white text-carbon-black border border-slate-300 hover:bg-slate-50 shadow-xs transition-all cursor-pointer print:hidden shrink-0"
 		>
 			<PrinterIcon size={15} />
-			<span>Cetak / Simpan PDF</span>
+			<span>Cetak Laporan</span>
 		</button>
 	</div>
 
 	<!-- Ringkasan Statistik Dashboard -->
 	<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
 		<!-- Omzet Bulan Ini -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
 				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Omzet Bulan Ini</p>
 				<div class="w-8 h-8 rounded-xl bg-amber-50 text-garage-orange flex items-center justify-center">
@@ -77,12 +72,12 @@
 				{formatRupiah(data.ringkasanDashboard.totalOmzetBulanIni)}
 			</p>
 			<p class="text-[11px] text-slate-400 mt-1">
-				{data.ringkasanDashboard.totalTransaksiBulanIni} Transaksi sukses
+				{data.ringkasanDashboard.totalTransaksiBulanIni} Transaksi
 			</p>
 		</div>
 
 		<!-- Okupansi Unit -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
 				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Okupansi Unit</p>
 				<div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
@@ -93,14 +88,14 @@
 				{data.ringkasanDashboard.garasiUsed} / {data.ringkasanDashboard.totalGarasi} <span class="text-xs font-normal text-slate-400">Unit</span>
 			</p>
 			<p class="text-[11px] text-emerald-600 mt-1 font-medium">
-				{data.ringkasanDashboard.garasiAvailable} Unit siap disewa
+				{data.ringkasanDashboard.garasiAvailable} Unit tersedia
 			</p>
 		</div>
 
 		<!-- Penyewa Aktif -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
-				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Penyewa Aktif</p>
+				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Penyewa Terverifikasi</p>
 				<div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
 					<ShieldCheckIcon size={16} />
 				</div>
@@ -108,13 +103,13 @@
 			<p class="text-xl sm:text-2xl font-black text-emerald-600 mt-2">
 				{data.ringkasanDashboard.totalPenyewaApproved} <span class="text-xs font-normal text-slate-400">Orang</span>
 			</p>
-			<p class="text-[11px] text-emerald-600 mt-1 font-medium">Status Approved</p>
+			<p class="text-[11px] text-emerald-600 mt-1 font-medium">Akun disetujui</p>
 		</div>
 
 		<!-- Antrean NIK -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
+		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
-				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Antrean Review</p>
+				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Antrean Verifikasi</p>
 				<div class="w-8 h-8 rounded-xl bg-amber-50 text-garage-orange flex items-center justify-center">
 					<ClockIcon size={16} />
 				</div>
@@ -122,36 +117,36 @@
 			<p class="text-xl sm:text-2xl font-black text-garage-orange mt-2">
 				{data.ringkasanDashboard.totalCalonPenyewaPending} <span class="text-xs font-normal text-slate-400">Orang</span>
 			</p>
-			<p class="text-[11px] text-amber-700 mt-1 font-medium">Menunggu verifikasi</p>
+			<p class="text-[11px] text-amber-700 mt-1 font-medium">Menunggu persetujuan</p>
 		</div>
 	</div>
 
-	<!-- 4 Dimensi Filter Tabs (print:hidden) -->
+	<!-- Filter Tabs (print:hidden) -->
 	<div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4 print:hidden">
 		<div class="flex items-center gap-2 border-b border-slate-100 pb-3 overflow-x-auto">
 			<a
 				href="/admin/laporan?mode=bulan&tahun={data.filter.tahun}&bulan={data.filter.bulan}"
 				class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 {data.filter.mode === 'bulan' ? 'bg-prussian text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
 			>
-				1. Laporan Per Bulan
+				Per Bulan
 			</a>
 			<a
 				href="/admin/laporan?mode=hari&tanggal={data.filter.tanggal}"
 				class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 {data.filter.mode === 'hari' ? 'bg-prussian text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
 			>
-				2. Laporan Per Hari
+				Per Hari
 			</a>
 			<a
 				href="/admin/laporan?mode=tipe&tipeGarasi={data.filter.tipeGarasi}"
 				class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 {data.filter.mode === 'tipe' ? 'bg-prussian text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
 			>
-				3. Laporan Per Tipe Garasi
+				Per Tipe Garasi
 			</a>
 			<a
 				href="/admin/laporan?mode=penyewa&penyewaId={data.filter.penyewaId}"
 				class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 {data.filter.mode === 'penyewa' ? 'bg-prussian text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
 			>
-				4. Laporan Per Penyewa
+				Per Penyewa
 			</a>
 		</div>
 
@@ -370,19 +365,19 @@
 								<!-- Status Sewa -->
 								<td class="py-3.5 px-4">
 									{#if sewa.statusSewa === 'MENUNGGU_VERIFIKASI'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
-											<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Verifikasi
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+											Verifikasi
 										</span>
 									{:else if sewa.statusSewa === 'AKTIF'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-											<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Aktif
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+											Aktif
 										</span>
 									{:else if sewa.statusSewa === 'DITOLAK'}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
-											<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Ditolak
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
+											Ditolak
 										</span>
 									{:else}
-										<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
 											Selesai
 										</span>
 									{/if}

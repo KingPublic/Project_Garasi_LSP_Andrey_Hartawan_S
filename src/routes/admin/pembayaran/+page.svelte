@@ -8,7 +8,6 @@
 		ClockIcon,
 		FileTextIcon,
 		DollarSignIcon,
-		InfoIcon,
 		CarIcon,
 		BikeIcon,
 		ZapIcon
@@ -26,20 +25,13 @@
 
 <div class="space-y-6">
 	<!-- Page Header -->
-	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200">
-		<div>
-			<div class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
-				<span>Admin</span>
-				<span>/</span>
-				<span class="text-carbon-black font-bold">Verifikasi Pembayaran</span>
-			</div>
-			<h1 class="text-2xl font-black text-carbon-black tracking-tight">
-				Verifikasi Pembayaran Sewa
-			</h1>
-			<p class="text-xs text-slate-500 mt-0.5">
-				Tinjau bukti pelunasan transfer bank sebelum masa sewa unit garasi resmi dinyatakan aktif.
-			</p>
-		</div>
+	<div class="pb-4 border-b border-slate-200">
+		<h1 class="text-xl sm:text-2xl font-bold text-carbon-black tracking-tight">
+			Verifikasi Pembayaran Sewa
+		</h1>
+		<p class="text-xs sm:text-sm text-slate-500 mt-1">
+			Periksa bukti transfer pembayaran sebelum transaksi sewa diaktifkan.
+		</p>
 	</div>
 
 	<!-- Alerts -->
@@ -64,7 +56,7 @@
 	{/if}
 
 	<!-- Statistics KPI Cards -->
-	<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+	<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 		<!-- Menunggu Verifikasi -->
 		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
@@ -76,13 +68,12 @@
 			<p class="text-2xl font-black text-carbon-black mt-2">
 				{data.stats.totalPending} <span class="text-xs font-normal text-slate-400">Transaksi</span>
 			</p>
-			<p class="text-[11px] text-amber-700 mt-1 font-medium">Memerlukan persetujuan Admin</p>
 		</div>
 
 		<!-- Nominal Menunggu -->
 		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
 			<div class="flex items-center justify-between">
-				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Akumulasi Nominal Pending</p>
+				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Nominal Pending</p>
 				<div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
 					<DollarSignIcon size={16} />
 				</div>
@@ -90,21 +81,6 @@
 			<p class="text-2xl font-black text-emerald-600 mt-2">
 				{formatRupiah(data.stats.totalNominal)}
 			</p>
-			<p class="text-[11px] text-slate-400 mt-1">Total transfer yang menunggu approval</p>
-		</div>
-
-		<!-- Info Ketentuan -->
-		<div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
-			<div class="flex items-center justify-between">
-				<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ketentuan Operasional</p>
-				<div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-					<InfoIcon size={16} />
-				</div>
-			</div>
-			<p class="text-xs text-slate-600 mt-2 font-medium leading-relaxed">
-				Setelah disetujui, status transaksi menjadi <span class="font-bold text-emerald-700">AKTIF</span> dan status garasi disinkronkan otomatis.
-			</p>
-			<p class="text-[11px] text-slate-400 mt-1">Jika ditolak, jadwal garasi otomatis dibebaskan</p>
 		</div>
 	</div>
 
@@ -301,7 +277,7 @@
 <!-- Modal Pratinjau Bukti Pembayaran -->
 {#if selectedBukti}
 	<div
-		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in"
+		class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
 		role="dialog"
 		aria-modal="true"
 	>

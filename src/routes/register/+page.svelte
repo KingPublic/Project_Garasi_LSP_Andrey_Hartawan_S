@@ -207,7 +207,7 @@
 				Pendaftaran Calon Penyewa
 			</h1>
 			<p class="mt-2 text-sm text-slate-600">
-				Daftarkan identitas resmi Anda untuk mulai menyewa garasi aman dan terpercaya di Garasi Ta.
+				Lengkapi data diri sesuai KTP untuk mendaftar sebagai penyewa.
 			</p>
 		</div>
 
@@ -548,7 +548,7 @@
 							</svg>
 							<span>Mendaftarkan Akun...</span>
 						{:else}
-							<span>Daftar Akun Sekarang</span>
+							<span>Daftar Akun</span>
 							<ArrowRightIcon size={16} />
 						{/if}
 					</button>
